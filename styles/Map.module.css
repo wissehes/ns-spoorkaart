@@ -1,3 +1,30 @@
-.stationheader {
+.popup {
+  /* width: 500px; */
+}
+
+.stationtable_content th {
+  text-align: center;
+  font-weight: initial;
+
+  margin-left: 1rem;
+}
+
+.trainheader {
   font-size: 20px;
+}
+
+.trainstops {
+  height: 250px;
+  width: auto;
+  /* overflow: scroll; */
+  overflow-y: scroll;
+
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.trainstops h2 {
+  position: sticky;
+  top: 0;
+  background-color: white;
 }
