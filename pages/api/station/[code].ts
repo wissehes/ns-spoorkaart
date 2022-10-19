@@ -30,7 +30,7 @@ async function getDepartures(code: String) {
       params: { station: code },
     }
   );
-  return data.payload.departures;
+  return data.payload.departures.slice(0, 3);
 }
 
 async function getArrivals(code: String) {
