@@ -2,9 +2,13 @@ import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import getStations from "../../helpers/getStations";
-import { Station } from "../../types/getStationsResponse";
+import {
+  SmallStation,
+  SmallStations,
+  Station,
+} from "../../types/getStationsResponse";
 
-type Data = Station[];
+type Data = SmallStation[];
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,5 +16,7 @@ export default async function handler(
 ) {
   const data = await getStations();
 
-  res.status(200).json(data.payload);
+  const { stations } = new SmallStations(data.payload);
+
+  res.status(200).json(stations);
 }
