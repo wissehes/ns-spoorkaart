@@ -11,27 +11,23 @@ import {
   SmallStations,
   Station,
 } from "../types/getStationsResponse";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
-export async function getServerSideProps() {
-  const trains = await getTrains();
-  const stations = await getStations();
-  const { stations: smallStations } = new SmallStations(stations.payload);
+// export async function getServerSideProps() {
+//   const trains = await getTrains();
+//   const stations = await getStations();
+//   const { stations: smallStations } = new SmallStations(stations.payload);
 
-  return {
-    props: {
-      trains: trains.payload.treinen,
-      stations: smallStations,
-    },
-  };
-}
+//   return {
+//     props: {
+//       trains: trains.payload.treinen,
+//       stations: smallStations,
+//     },
+//   };
+// }
 
-const Home = ({
-  trains,
-  stations,
-}: {
-  trains: Trein[];
-  stations: SmallStation[];
-}) => {
+const Home = () => {
   const MapWithNoSSR = dynamic(() => import("../components/Map"), {
     ssr: false,
   });
@@ -45,7 +41,7 @@ const Home = ({
       </Head>
 
       <main className={styles.leaflet}>
-        <MapWithNoSSR trains={trains} stations={stations} />
+        <MapWithNoSSR />
       </main>
     </div>
   );
