@@ -22,7 +22,7 @@ export default function StationPopup({ station }: { station: SmallStation }) {
       </p>
 
       <div>
-        <table>
+        <table className="table">
           <thead>
             <tr style={{ textAlign: "center", fontWeight: "bolder" }}>
               <th>Tijd</th>
