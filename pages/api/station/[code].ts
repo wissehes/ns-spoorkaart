@@ -4,6 +4,8 @@ import { getArrivalsResponse } from "../../../types/getArrivalsResponse";
 import { getDeparturesResponse } from "../../../types/getDeparturesResponse";
 import { StationInfoResponse } from "../../../types/getStationInfoResponse";
 
+import { getDepartures, getArrivals } from "../../../helpers/stationHelpers";
+
 // type Data = any;
 
 export default async function handler(
@@ -14,31 +16,11 @@ export default async function handler(
     query: { code },
   } = req;
 
-  const departures = await getDepartures(code as string);
+  const departures = await getDepartures(code as string, 3);
   const arrivals = await getArrivals(code as string);
 
   res.json({
     departures,
     arrivals,
   });
-}
-
-async function getDepartures(code: String) {
-  const { data } = await NS.get<getDeparturesResponse>(
-    "/reisinformatie-api/api/v2/departures",
-    {
-      params: { station: code },
-    }
-  );
-  return data.payload.departures.slice(0, 3);
-}
-
-async function getArrivals(code: String) {
-  const { data } = await NS.get<getArrivalsResponse>(
-    "/reisinformatie-api/api/v2/arrivals",
-    {
-      params: { station: code },
-    }
-  );
-  return data.payload.arrivals;
 }
