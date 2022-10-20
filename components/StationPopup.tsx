@@ -7,12 +7,16 @@ import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
 
 export default function StationPopup({ station }: { station: SmallStation }) {
-  const query = useQuery(["station", station.code], async () => {
-    const { data } = await axios.get<StationInfoResponse>(
-      `/api/station/${station.code}`
-    );
-    return data;
-  });
+  const query = useQuery(
+    ["station", station.code],
+    async () => {
+      const { data } = await axios.get<StationInfoResponse>(
+        `/api/station/${station.code}`
+      );
+      return data;
+    },
+    { refetchOnWindowFocus: false }
+  );
 
   return (
     <>
@@ -47,6 +51,8 @@ export default function StationPopup({ station }: { station: SmallStation }) {
               ))}
           </tbody>
         </table>
+
+        <a href={`/stations/${station.code}`}>Meer info {"->"}</a>
       </div>
     </>
   );

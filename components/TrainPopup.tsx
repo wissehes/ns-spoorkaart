@@ -13,12 +13,16 @@ const formatDelay = (delay: number) => {
 };
 
 export default function TrainPopup({ train }: { train: Trein }) {
-  const { data } = useQuery(["train", train.treinNummer], async () => {
-    const { data } = await axios.get<JourneyDetails>(
-      `/api/trains/${train.treinNummer}`
-    );
-    return data;
-  });
+  const { data } = useQuery(
+    ["train", train.treinNummer],
+    async () => {
+      const { data } = await axios.get<JourneyDetails>(
+        `/api/trains/${train.treinNummer}`
+      );
+      return data;
+    },
+    { refetchOnWindowFocus: false }
+  );
 
   return (
     <div>
