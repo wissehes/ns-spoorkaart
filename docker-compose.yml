@@ -1,0 +1,9 @@
+version: "3.3"
+
+services:
+  my_app:
+    image: ns-spoorkaart
+    ports:
+      - 3000:3000
+    environment:
+      - NS_API=<ns_api_key>
