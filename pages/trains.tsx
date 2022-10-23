@@ -13,6 +13,7 @@ import {
 } from "../types/getStationsResponse";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import NavBar from "../components/NavBar";
 
 // export async function getServerSideProps() {
 //   const trains = await getTrains();
@@ -41,6 +42,7 @@ const Home = () => {
       </Head>
 
       <main className={styles.leaflet}>
+        <NavBar />
         <MapWithNoSSR />
       </main>
     </div>
