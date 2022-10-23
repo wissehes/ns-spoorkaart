@@ -6,7 +6,7 @@ RUN apk --no-cache --virtual build-dependencies add \
     make \
     g++ 
 
-RUN mkdir -p /usr/src
+RUN mkdir -p /app
 WORKDIR /app
 COPY . /app
 

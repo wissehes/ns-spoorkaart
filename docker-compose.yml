@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   my_app:
-    image: ns-spoorkaart
+    image: ghcr.io/wissehes/ns-spoorkaart:main
     ports:
       - 3000:3000
     environment:
