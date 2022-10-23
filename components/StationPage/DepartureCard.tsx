@@ -1,4 +1,7 @@
 import { DepartureWithJourney } from "../../pages/stations/[code]";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 function formatTime(date: string) {
   return new Date(date).toLocaleTimeString("nl-NL", {
@@ -11,6 +14,11 @@ const formatDelay = (delay: number) => {
   const d = delay / 60;
   return Math.round(d);
 };
+
+function timeUntil(date: string) {
+  const day = dayjs();
+  return day.to(date);
+}
 
 export default function DepartureCard({
   departure: d,
@@ -28,12 +36,17 @@ export default function DepartureCard({
             <p className="is-size-3 is-align-content-center">
               {formatTime(d.departure.plannedDateTime)}
             </p>
-            {delay > 30 && <p>+{formatDelay(delay || 0)}</p>}
+            {delay > 30 && (
+              <p className="has-text-danger">+{formatDelay(delay || 0)}</p>
+            )}
+            <p className="has-text-grey">
+              {timeUntil(d.departure.actualDateTime)}
+            </p>
           </div>
           <div>
             <h1 className="is-size-4">
               {d.departure.product.longCategoryName} naar{" "}
-              {d.departure.direction}
+              <b>{d.departure.direction}</b>
             </h1>
             {d.departure.routeStations.length > 0 && (
               <h3>
@@ -51,7 +64,7 @@ export default function DepartureCard({
           </p>
         </div>
       </div>
-      <div className="is-flex" style={{ overflow: "scroll" }}>
+      <div className="is-flex" style={{ overflow: "scroll", height: "2.5rem" }}>
         {d.stop?.actualStock?.trainParts
           .filter((p) => p.image)
           .map((p) => (
@@ -60,11 +73,22 @@ export default function DepartureCard({
               src={p.image?.uri || ""}
               alt={p.stockIdentifier}
               key={p.stockIdentifier}
-              // height="80%"
               //   layout="fill"
             />
           ))}
       </div>
+      <div>
+        <p>{departureStatus(d.departure.departureStatus)}</p>
+      </div>
     </div>
   );
+}
+
+function departureStatus(status: string) {
+  switch (status) {
+    case "ON_STATION":
+      return "Aan perron";
+    case "INCOMING":
+      return "Nog niet op station";
+  }
 }
