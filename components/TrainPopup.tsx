@@ -27,13 +27,21 @@ export default function TrainPopup({ train }: { train: Trein }) {
   return (
     <div>
       <h1 className="is-size-5">
-        {train.type} naar {data?.stops[data.stops.length - 1].stop.name || ""}
+        🚂 {train.type} naar {/* {train.} */}
+        {data?.stops[data.stops.length - 1].stop.name || ""}
       </h1>
-      <p>
-        {data && data.stops[0]?.departures[0]?.product.operatorName}{" "}
-        {data && data.stops[0]?.departures[0]?.product.longCategoryName}
-      </p>
-      <p>Snelheid: {train.snelheid} km/u</p>
+
+      <ul>
+        <li>
+          Type{" "}
+          <b>
+            {data && data.stops[0]?.departures[0]?.product.operatorName}{" "}
+            {data && data.stops[0]?.departures[0]?.product.longCategoryName}
+          </b>{" "}
+          @ <b>{Math.round(train.snelheid)}</b> km/u
+        </li>
+        <li>{data?.notes.map((a) => a.text).join(", ")}</li>
+      </ul>
 
       <div className={styles.trainstops}>
         <h1 className="is-size-6">Haltes</h1>
@@ -55,13 +63,16 @@ export default function TrainPopup({ train }: { train: Trein }) {
                     status == "ORIGIN" ||
                     status == "DESTINATION"
                 )
-                .map((s) => (
+                .map((s, i) => (
                   <tr key={s.stop.uicCode}>
                     <th>{s.stop.name}</th>
                     <th>
-                      {formatTime(s.arrivals[0]?.plannedTime)}{" "}
-                      {s.arrivals[0]?.delayInSeconds > 1 &&
-                        "+" + formatDelay(s.arrivals[0]?.delayInSeconds)}
+                      {i == 0 && "Herkomst"}
+                      {i > 0 && formatTime(s.arrivals[0]?.plannedTime)}{" "}
+                      <span className="has-text-danger">
+                        {s.arrivals[0]?.delayInSeconds > 1 &&
+                          "+" + formatDelay(s.arrivals[0]?.delayInSeconds)}
+                      </span>
                     </th>
                     <th>
                       {getDistanceFromGPS({

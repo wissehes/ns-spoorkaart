@@ -19,8 +19,8 @@ export default function StationPopup({ station }: { station: SmallStation }) {
   );
 
   return (
-    <>
-      <h1 className={styles.stationheader}>Station {station.namen.lang}</h1>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <h1 className="is-size-5">🚉 Station {station.namen.lang}</h1>
       <p>
         Sporen: <b>{station.sporen.map((s) => s.spoorNummer).join(", ")}</b>
       </p>
@@ -44,16 +44,15 @@ export default function StationPopup({ station }: { station: SmallStation }) {
                   className={styles.stationtable_content}
                 >
                   <th>{formatTime(a.actualDateTime)}</th>
-                  <th>{a.product.shortCategoryName}</th>
+                  <th>{a.product.longCategoryName}</th>
                   <th>{a.plannedTrack}</th>
                   <th>{a.direction}</th>
                 </tr>
               ))}
           </tbody>
         </table>
-
-        <a href={`/stations/${station.code}`}>Meer info {"->"}</a>
       </div>
-    </>
+      <a href={`/stations/${station.code}`}>Meer info {"->"}</a>
+    </div>
   );
 }
