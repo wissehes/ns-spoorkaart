@@ -1,6 +1,8 @@
 import { DepartureWithJourney } from "../../pages/stations/[code]";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/nl";
+import SpoorIcon from "./SpoorIcon";
 dayjs.extend(relativeTime);
 
 function formatTime(date: string) {
@@ -17,7 +19,7 @@ const formatDelay = (delay: number) => {
 
 function timeUntil(date: string) {
   const day = dayjs();
-  return day.to(date);
+  return day.locale("nl").to(date);
 }
 
 export default function DepartureCard({
@@ -48,16 +50,22 @@ export default function DepartureCard({
               {d.departure.product.longCategoryName} naar{" "}
               <b>{d.departure.direction}</b>
             </h1>
+            <h1>Van {d.stop?.departures[0].origin.name}</h1>
             {d.departure.routeStations.length > 0 && (
               <h3>
                 Via{" "}
-                {d.departure.routeStations.map((r) => r.mediumName).join(", ")}
+                <b>
+                  {d.departure.routeStations
+                    .map((r) => r.mediumName)
+                    .join(", ")}
+                </b>
               </h3>
             )}
           </div>
         </div>
         <div>
-          <p>Spoor {d.departure.plannedTrack}</p>
+          {/* <p>Spoor {d.departure.plannedTrack}</p> */}
+          <SpoorIcon spoorNr={d.departure.plannedTrack} />
           <p>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</p>
           <p>
             {product.operatorName} {product.longCategoryName} {product.number}
