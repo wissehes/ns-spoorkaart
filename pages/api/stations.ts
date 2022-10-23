@@ -16,7 +16,9 @@ export default async function handler(
 ) {
   const data = await getStations();
 
-  const { stations } = new SmallStations(data.payload);
+  const { stations } = new SmallStations(
+    data.payload.filter((s) => s.land == "NL")
+  );
 
   res.status(200).json(stations);
 }
