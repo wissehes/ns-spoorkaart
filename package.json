@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@badrap/bar-of-progress": "^0.2.2",
     "@tanstack/react-query": "^4.12.0",
     "@tanstack/react-query-devtools": "^4.12.0",
     "axios": "^1.1.3",
