@@ -6,6 +6,8 @@ import {
   Marker,
   Popup,
   GeoJSON,
+  LayersControl,
+  LayerGroup,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
@@ -18,7 +20,6 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Icon, Point } from "leaflet";
 import TrainPopup from "./TrainPopup";
-import { GeoJsonObject } from "geojson";
 
 const trainIcon = new Icon({
   iconUrl: "/assets/train.png",
@@ -44,39 +45,48 @@ export default function Map() {
     <MapContainer
       center={[52.1, 4.9]}
       zoom={9}
-      style={{ height: "100%", width: "100%" }}
+      style={{ height: "90%", width: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {trainQuery.data &&
-        trainQuery.data.map((train) => (
-          <Marker
-            key={train.ritId}
-            position={[train.lat, train.lng]}
-            icon={trainIcon}
-            zIndexOffset={1000}
-          >
-            <Popup className={styles.popup}>
-              <TrainPopup train={train} />
-            </Popup>
-          </Marker>
-        ))}
-
-      {stationQuery.data &&
-        stationQuery.data.map((station) => (
-          <Marker
-            key={station.code}
-            position={[station.lat, station.lng]}
-            zIndexOffset={1}
-          >
-            <Popup className={styles.popup}>
-              <StationPopup station={station} />
-            </Popup>
-          </Marker>
-        ))}
+      <LayersControl position="topright">
+        <LayersControl.Overlay name="Laat stations zien" checked>
+          <LayerGroup>
+            {stationQuery.data &&
+              stationQuery.data.map((station) => (
+                <Marker
+                  key={station.code}
+                  position={[station.lat, station.lng]}
+                  zIndexOffset={1}
+                >
+                  <Popup className={styles.popup}>
+                    <StationPopup station={station} />
+                  </Popup>
+                </Marker>
+              ))}
+          </LayerGroup>
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Laat treinen zien" checked>
+          <LayerGroup>
+            {trainQuery.data &&
+              trainQuery.data.map((train) => (
+                <Marker
+                  key={train.ritId}
+                  position={[train.lat, train.lng]}
+                  icon={trainIcon}
+                  zIndexOffset={1000}
+                >
+                  <Popup className={styles.popup}>
+                    <TrainPopup train={train} />
+                  </Popup>
+                </Marker>
+              ))}
+          </LayerGroup>
+        </LayersControl.Overlay>
+      </LayersControl>
     </MapContainer>
   );
 }
