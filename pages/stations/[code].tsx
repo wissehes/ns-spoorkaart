@@ -8,6 +8,9 @@ import { Station } from "../../types/getStationsResponse";
 import { TrainInformation } from "../../types/getTrainInfoResponse";
 import DepartureCard from "../../components/StationPage/DepartureCard";
 import Head from "next/head";
+import NavBar from "../../components/NavBar";
+import SpoorIcon from "../../components/StationPage/SpoorIcon";
+import Link from "next/link";
 
 const formatStationType = (type: string) => {
   switch (type) {
@@ -17,6 +20,8 @@ const formatStationType = (type: string) => {
       return "Stoptrijn knooppunt";
     case "KNOOPPUNT_INTERCITY_STATION":
       return "Intercity knooppunt";
+    case "STOPTREIN_STATION":
+      return "Stoptrein station";
     default:
       return type;
   }
@@ -36,20 +41,52 @@ export default function StationPage({
         <title>{station.namen.lang} vertrektijden | NS Spoorkaart</title>
       </Head>
 
-      <div className="container">
-        <section className="hero">
-          <div className="hero-body">
-            <p className="title">{station.namen.lang}</p>
-            <p className="subtitle">
-              Vertrektijden | {formatStationType(station.stationType)}
-            </p>
-          </div>
-        </section>
+      <NavBar />
 
+      <section className="hero is-info" style={{ marginBottom: "2rem" }}>
+        <div className="hero-body">
+          <p className="title">{station.namen.lang}</p>
+          <p className="subtitle">
+            {formatStationType(station.stationType)}
+            {station.synoniemen.length > 0 &&
+              "| Ook bekend als: " + station.synoniemen.join(", ")}
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              overflow: "scroll",
+            }}
+          >
+            {station.sporen.map((a) => (
+              <SpoorIcon key={a.spoorNummer} spoorNr={a.spoorNummer} />
+            ))}
+          </div>
+        </div>
+
+        <div className="hero-foot">
+          <nav className="tabs is-boxed is-fullwidth">
+            <div className="container">
+              <ul>
+                <li className="is-active">
+                  <Link href={`/stations/${station.code}`}>
+                    <a>Vertrektijden</a>
+                  </Link>
+                </li>
+                <li>
+                  <a>Aankomsttijden</a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </section>
+      <div className="container">
         {departures.map((d) => (
           <DepartureCard departure={d} key={d.departure.product.number} />
         ))}
       </div>
+      <div style={{ padding: "2rem" }} />
     </>
   );
 }
@@ -86,10 +123,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       const foundStop = journey.stops.find(
         (s) => s.stop.uicCode == foundStation.UICCode
       );
+      const origin = journey.stops[0];
 
       departuresWithTripInfo.push({
         departure: d,
         stop: foundStop,
+        origin,
       });
       // departuresWithTripInfo.push({ departure: d, train });
     }
@@ -113,6 +152,7 @@ export interface DepartureWithJourney {
   journey?: JourneyDetails;
   train?: TrainInformation;
   stop?: Stop;
+  origin?: Stop;
 }
 
 // class DepartureWithTrip {
