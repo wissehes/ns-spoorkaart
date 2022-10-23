@@ -5,6 +5,7 @@ import { StationInfoResponse } from "../types/getStationInfoResponse";
 
 import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
+import Link from "next/link";
 
 export default function StationPopup({ station }: { station: SmallStation }) {
   const query = useQuery(
@@ -52,7 +53,9 @@ export default function StationPopup({ station }: { station: SmallStation }) {
           </tbody>
         </table>
       </div>
-      <a href={`/stations/${station.code}`}>Meer info {"->"}</a>
+      <Link href={`/stations/${station.code}`}>
+        <a>Meer info {"->"}</a>
+      </Link>
     </div>
   );
 }
