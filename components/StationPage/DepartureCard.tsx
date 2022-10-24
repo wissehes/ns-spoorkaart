@@ -1,4 +1,4 @@
-import { DepartureWithJourney } from "../../pages/stations/[code]";
+import { DepartureWithJourney } from "../../pages/stations/[code]/departures";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/nl";
@@ -50,7 +50,7 @@ export default function DepartureCard({
               {d.departure.product.longCategoryName} naar{" "}
               <b>{d.departure.direction}</b>
             </h1>
-            <h1>Van {d.stop?.departures[0].origin.name}</h1>
+            <h1>Van {d.stop?.departures[0]?.origin.name}</h1>
             {d.departure.routeStations.length > 0 && (
               <h3>
                 Via{" "}
