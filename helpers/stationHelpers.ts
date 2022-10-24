@@ -17,14 +17,19 @@ export async function getDepartures(code: String, limit?: number) {
   } else return data.payload.departures.slice(0, limit);
 }
 
-export async function getArrivals(code: String) {
+export async function getArrivals(code: String, limit?: number) {
   const { data } = await NS.get<getArrivalsResponse>(
     "/reisinformatie-api/api/v2/arrivals",
     {
       params: { station: code },
     }
   );
-  return data.payload.arrivals;
+
+  if (!limit || limit == 0) {
+    return data.payload.arrivals;
+  } else if (data.payload.arrivals.length <= limit) {
+    return data.payload.arrivals;
+  } else return data.payload.arrivals.slice(0, limit);
 }
 
 /**
