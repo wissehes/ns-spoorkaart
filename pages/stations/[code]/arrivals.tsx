@@ -23,7 +23,7 @@ export default function ArrivalsPage({
   return (
     <>
       <Head>
-        <title>{station.namen.lang} vertrektijden | NS Spoorkaart</title>
+        <title>{station.namen.lang} aankomsttijden | NS Spoorkaart</title>
       </Head>
 
       <NavBar />
