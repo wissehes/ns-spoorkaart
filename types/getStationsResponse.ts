@@ -55,7 +55,8 @@ export interface Station {
   radius: number;
   naderenRadius: number;
   ingangsDatum: string;
-  nearbyMeLocationId: NearbyMeLocationId;
+
+  // [key: string]: string | string[] | Spoor[] | boolean | Namen | number;
 }
 
 export interface Spoor {
@@ -66,9 +67,4 @@ export interface Namen {
   lang: string;
   middel: string;
   kort: string;
-}
-
-export interface NearbyMeLocationId {
-  value: string;
-  type: string;
 }
