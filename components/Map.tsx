@@ -37,10 +37,14 @@ export default function Map() {
     { refetchInterval: 4000 }
   );
 
-  const stationQuery = useQuery(["stations"], async () => {
-    const { data } = await axios.get<SmallStation[]>("/api/stations");
-    return data;
-  });
+  const stationQuery = useQuery(
+    ["stations"],
+    async () => {
+      const { data } = await axios.get<SmallStation[]>("/api/stations");
+      return data;
+    },
+    { refetchOnWindowFocus: false }
+  );
   return (
     <MapContainer
       center={[52.1, 4.9]}
