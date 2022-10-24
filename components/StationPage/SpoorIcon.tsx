@@ -17,7 +17,9 @@ const SpoorIcon = ({ spoorNr }: { spoorNr: string }) => (
     }}
   >
     <p style={{ fontSize: "10px", fontFamily: "monospace" }}>Spoor</p>
-    <p style={{ fontSize: "30px", fontWeight: "bold" }}>{spoorNr}</p>
+    <p style={{ fontSize: "30px", fontWeight: "bold" }}>
+      {spoorNr?.length > 0 ? spoorNr : "?"}
+    </p>
   </div>
 );
 
