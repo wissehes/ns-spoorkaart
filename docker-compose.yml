@@ -1,9 +1,17 @@
 version: "3.3"
 
 services:
-  my_app:
+  spoorkaart:
     image: ghcr.io/wissehes/ns-spoorkaart:main
+    depends_on:
+      - redis
     ports:
       - 3000:3000
     environment:
       - NS_API=<ns_api_key>
+      - REDIS_URL=redis://redis
+  redis:
+    image: redis/redis-stack:latest
+    volumes: ./redisdata:/data
+    ports:
+      - 8001:8001
