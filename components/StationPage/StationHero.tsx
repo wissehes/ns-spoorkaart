@@ -5,7 +5,7 @@ import { formatStationType } from "../../helpers/StationPage";
 
 import { Station } from "../../types/getStationsResponse";
 
-type TabType = "departures" | "arrivals";
+type TabType = "departures" | "arrivals" | "disruptions";
 
 export default function StationHero({
   station,
@@ -48,6 +48,11 @@ export default function StationHero({
               <li className={activeTab == "arrivals" ? "is-active" : ""}>
                 <Link href={`/stations/${station.code}/arrivals`}>
                   <a>Aankomsttijden</a>
+                </Link>
+              </li>
+              <li className={activeTab == "disruptions" ? "is-active" : ""}>
+                <Link href={`/stations/${station.code}/disruptions`}>
+                  <a>Storingen</a>
                 </Link>
               </li>
             </ul>
