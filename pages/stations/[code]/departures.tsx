@@ -68,17 +68,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const departuresWithTripInfo: DepartureWithJourney[] = [];
 
     for (const d of departures) {
-      // const train = await getTrainInformation(d.product.number);
-      const journey = await getJourney(d.product.number);
+      try {
+        // const train = await getTrainInformation(d.product.number);
+        const journey = await getJourney(d.product.number);
 
-      const foundStop = journey.stops.find(
-        (s) => s.stop.uicCode == foundStation.UICCode
-      );
+        const foundStop = journey.stops.find(
+          (s) => s.stop.uicCode == foundStation.UICCode
+        );
 
-      departuresWithTripInfo.push({
-        departure: d,
-        stop: foundStop,
-      });
+        departuresWithTripInfo.push({
+          departure: d,
+          stop: foundStop,
+        });
+      } catch (e) {
+        console.log(`[TRAINS] Fetching journey ${d.product.number} failed.`);
+        // console.error(e);
+        departuresWithTripInfo.push({
+          departure: d,
+        });
+      }
     }
 
     return {
