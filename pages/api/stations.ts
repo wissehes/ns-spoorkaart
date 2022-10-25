@@ -9,13 +9,9 @@ import {
   SmallStations,
   Station,
 } from "../../types/getStationsResponse";
+import { RedisStations } from "../../types/RedisStations";
 
 type Data = SmallStation[];
-
-type RedisStations = {
-  stations: SmallStation[];
-  saveDate: Date;
-};
 
 export default async function handler(
   req: NextApiRequest,
