@@ -1,22 +1,28 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import useStations from "../../hooks/useStations";
 
 export default function NavBar() {
   const router = useRouter();
+  const stations = useStations();
+
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="navbar-brand">
-        <p className="is-size-4" style={{ padding: "1rem" }}>
+        <p className="is-size-4" style={{ margin: "10px 10px " }}>
           Treinen
         </p>
 
         <a
           role="button"
-          className="navbar-burger"
+          className={expanded ? "navbar-burger is-active" : "navbar-burger"}
           aria-label="menu"
           aria-expanded="false"
           data-target="navBar"
+          onClick={() => setExpanded((a) => !a)}
         >
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
@@ -24,7 +30,10 @@ export default function NavBar() {
         </a>
       </div>
 
-      <div id="navBar" className="navbar-menu">
+      <div
+        id="navBar"
+        className={expanded ? "navbar-menu is-active" : "navbar-menu"}
+      >
         <div className="navbar-start">
           <Link href="/trains">
             <a
@@ -38,18 +47,22 @@ export default function NavBar() {
             </a>
           </Link>
 
-          {/* <div className="navbar-item has-dropdown is-hoverable">
-            <a className="navbar-link">Opties</a>
-            <div className="navbar-dropdown" style={{ zIndex: "10000" }}>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  style={{ marginLeft: "10px", marginRight: "10px" }}
-                ></input>
-                Stations
-              </label>
+          <div className="navbar-item has-dropdown is-hoverable">
+            <a className="navbar-link">Stations</a>
+
+            <div className="navbar-dropdown" style={{ zIndex: 100000000 }}>
+              {stations.data
+                ?.filter(
+                  ({ stationType: t, sporen }) =>
+                    t == "MEGA_STATION" || sporen.length > 7
+                )
+                .map((s) => (
+                  <Link key={s.code} href={`/stations/${s.code}`}>
+                    <a className="navbar-item">{s.namen.lang}</a>
+                  </Link>
+                ))}
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </nav>
