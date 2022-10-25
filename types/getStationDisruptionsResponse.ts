@@ -78,6 +78,7 @@ export interface Timespan {
   advices: string[];
   period?: string;
   alternativeTransport?: AlternativeTransport;
+  additionalTravelTime?: AlternativeTransport;
 }
 
 export interface Situation {
