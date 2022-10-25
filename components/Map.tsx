@@ -20,12 +20,36 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Icon, Point } from "leaflet";
 import TrainPopup from "./TrainPopup";
+import useStations from "../hooks/useStations";
 
-const trainIcon = new Icon({
+const ICIcon = new Icon({
   iconUrl: "/assets/train.png",
   iconRetinaUrl: "/assets/train.svg",
   iconSize: [90, 50],
 });
+
+const sprinterIcon = new Icon({
+  iconUrl: "/assets/NS/sprinter.png",
+  // iconRetinaUrl: "/assets/train.svg",
+  iconSize: [78, 30],
+});
+
+const arrivaIcon = new Icon({
+  iconUrl: "/assets/arriva/train.png",
+  // iconRetinaUrl: "/assets/train.svg",
+  // iconSize: [50, 50],
+  iconSize: [78, 30],
+});
+
+type TrainTypes = {
+  [key: string]: Icon;
+};
+
+const types: TrainTypes = {
+  ARR: arrivaIcon,
+  IC: ICIcon,
+  SPR: sprinterIcon,
+};
 
 export default function Map() {
   const trainQuery = useQuery(
@@ -37,19 +61,13 @@ export default function Map() {
     { refetchInterval: 4000 }
   );
 
-  const stationQuery = useQuery(
-    ["stations"],
-    async () => {
-      const { data } = await axios.get<SmallStation[]>("/api/stations");
-      return data;
-    },
-    { refetchOnWindowFocus: false }
-  );
+  const stationQuery = useStations();
+
   return (
     <MapContainer
       center={[52.1, 4.9]}
       zoom={9}
-      style={{ height: "90%", width: "100%" }}
+      style={{ height: "90%", width: "100%", zIndex: 10 }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -80,7 +98,7 @@ export default function Map() {
                 <Marker
                   key={train.ritId}
                   position={[train.lat, train.lng]}
-                  icon={trainIcon}
+                  icon={types[train.type] || sprinterIcon}
                   zIndexOffset={1000}
                 >
                   <Popup className={styles.popup}>
