@@ -1,4 +1,5 @@
 export type getTrainInfoResponse = TrainInformation;
+export type getMultipleTrainsInfoResponse = TrainInformation[];
 
 export interface TrainInformation {
   bron: string;
