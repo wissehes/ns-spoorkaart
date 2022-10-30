@@ -12,7 +12,10 @@ export default function NavBar() {
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="navbar-brand">
-        <p className="is-size-4" style={{ margin: "10px 10px " }}>
+        <p
+          className="is-size-4 has-text-primary"
+          style={{ margin: "10px 10px " }}
+        >
           Treinen
         </p>
 
