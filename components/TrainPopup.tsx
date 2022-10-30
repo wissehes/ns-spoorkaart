@@ -118,49 +118,6 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
         <li>{data?.notes.map((a) => a.text).join(", ")}</li>
       </ul>
 
-      {/* <div className={styles.trainstops}>
-        <h1 className="is-size-6">Haltes</h1>
-
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Station</th>
-              <th>Aankomsttijd</th>
-              <th>Afstand</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data &&
-              data.stops
-                .filter(
-                  ({ status }) =>
-                    status == "STOP" ||
-                    status == "ORIGIN" ||
-                    status == "DESTINATION"
-                )
-                .map((s, i) => (
-                  <tr key={s.stop.uicCode}>
-                    <th>{s.stop.name}</th>
-                    <th>
-                      {i == 0 && "Herkomst"}
-                      {i > 0 && formatTime(s.arrivals[0]?.plannedTime)}{" "}
-                      <span className="has-text-danger">
-                        {s.arrivals[0]?.delayInSeconds > 1 &&
-                          "+" + formatDelay(s.arrivals[0]?.delayInSeconds)}
-                      </span>
-                    </th>
-                    <th>
-                      {getDistanceFromGPS({
-                        location1: { lat: train.lat, lon: train.lng },
-                        location2: { lat: s.stop.lat, lon: s.stop.lng },
-                      })}{" "}
-                      km
-                    </th>
-                  </tr>
-                ))}
-          </tbody>
-        </table>
-      </div> */}
       <Link href={`/train/${train.treinNummer}`}>
         <a>Meer info {"->"}</a>
       </Link>
