@@ -58,14 +58,14 @@ const types: TrainTypes = {
 };
 
 export default function Map() {
-  const trainQuery = useQuery(
-    ["trains"],
-    async () => {
-      const { data } = await axios.get<TreinWithInfo[]>("/api/trains");
-      return data;
-    },
-    { refetchInterval: 4000 }
-  );
+  // const trainQuery = useQuery(
+  //   ["trains"],
+  //   async () => {
+  //     const { data } = await axios.get<TreinWithInfo[]>("/api/trains");
+  //     return data;
+  //   },
+  //   { refetchInterval: 4000 }
+  // );
 
   return (
     <MapContainer
