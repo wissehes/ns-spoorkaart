@@ -27,7 +27,7 @@ export interface Materieeldelen {
   breedte: number;
   hoogte: number;
   bakken: Bakken[];
-  zitplaatsen: Zitplaatsen;
+  zitplaatsen?: Zitplaatsen;
 }
 
 export interface Zitplaatsen {
