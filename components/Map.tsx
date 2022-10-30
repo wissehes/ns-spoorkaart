@@ -12,15 +12,21 @@ import {
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
-import { SmallStation } from "../types/getStationsResponse";
 
 import styles from "../styles/Map.module.css";
 import StationPopup from "./StationPopup";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Icon, Point } from "leaflet";
-import TrainPopup from "./TrainPopup";
 import useStations from "../hooks/useStations";
+import { useState } from "react";
+import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
+import TrainMarkers from "./Map/TrainMarkers";
+
+const NSIcon = new Icon({
+  iconUrl: "/assets/NS/logo.png",
+  iconSize: [40, 15.86666667],
+});
 
 const ICIcon = new Icon({
   iconUrl: "/assets/train.png",
@@ -55,13 +61,11 @@ export default function Map() {
   const trainQuery = useQuery(
     ["trains"],
     async () => {
-      const { data } = await axios.get<Trein[]>("/api/trains");
+      const { data } = await axios.get<TreinWithInfo[]>("/api/trains");
       return data;
     },
     { refetchInterval: 4000 }
   );
-
-  const stationQuery = useStations();
 
   return (
     <MapContainer
@@ -76,23 +80,11 @@ export default function Map() {
 
       <LayersControl position="topright">
         <LayersControl.Overlay name="Laat stations zien" checked>
-          <LayerGroup>
-            {stationQuery.data &&
-              stationQuery.data.map((station) => (
-                <Marker
-                  key={station.code}
-                  position={[station.lat, station.lng]}
-                  zIndexOffset={1}
-                >
-                  <Popup className={styles.popup}>
-                    <StationPopup station={station} />
-                  </Popup>
-                </Marker>
-              ))}
-          </LayerGroup>
+          <StationMarkers />
         </LayersControl.Overlay>
         <LayersControl.Overlay name="Laat treinen zien" checked>
-          <LayerGroup>
+          <TrainMarkers />
+          {/* <LayerGroup>
             {trainQuery.data &&
               trainQuery.data.map((train) => (
                 <Marker
@@ -106,9 +98,40 @@ export default function Map() {
                   </Popup>
                 </Marker>
               ))}
-          </LayerGroup>
+          </LayerGroup> */}
         </LayersControl.Overlay>
       </LayersControl>
     </MapContainer>
+  );
+}
+
+function StationMarkers() {
+  const [showStations, setStations] = useState(false);
+
+  const stationQuery = useStations();
+  const map = useMap();
+  map.on("zoomend", () => {
+    if (map.getZoom() > 13) {
+      setStations(true);
+    } else setStations(false);
+  });
+
+  return (
+    <LayerGroup>
+      {stationQuery.data &&
+        showStations &&
+        stationQuery.data.map((station) => (
+          <Marker
+            key={station.code}
+            position={[station.lat, station.lng]}
+            zIndexOffset={1}
+            icon={NSIcon}
+          >
+            <Popup className={styles.popup}>
+              <StationPopup station={station} />
+            </Popup>
+          </Marker>
+        ))}
+    </LayerGroup>
   );
 }
