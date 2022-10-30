@@ -20,11 +20,14 @@
     "leaflet": "^1.9.2",
     "leaflet-defaulticon-compatibility": "^0.1.1",
     "leaflet-geosearch": "^3.7.0",
+    "mapbox-gl": "npm:empty-npm-package@1.0.0",
+    "maplibre-gl": "^2.4.0",
     "next": "12.3.1",
     "node-sass": "^7.0.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-leaflet": "^4.1.0",
+    "react-map-gl": "^7.0.19",
     "redis": "^4.3.1"
   },
   "devDependencies": {
