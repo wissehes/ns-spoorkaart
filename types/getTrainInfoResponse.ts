@@ -27,6 +27,16 @@ export interface Materieeldelen {
   breedte: number;
   hoogte: number;
   bakken: Bakken[];
+  zitplaatsen: Zitplaatsen;
+}
+
+export interface Zitplaatsen {
+  staanplaatsEersteKlas: number;
+  staanplaatsTweedeKlas: number;
+  zitplaatsEersteKlas: number;
+  zitplaatsTweedeKlas: number;
+  klapstoelEersteKlas: number;
+  klapstoelTweedeKlas: number;
 }
 
 export interface Bakken {

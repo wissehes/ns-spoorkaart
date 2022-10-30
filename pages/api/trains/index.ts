@@ -39,7 +39,11 @@ async function getTrainInfo(trains: Trein[]) {
   const { data } = await NS.get<getMultipleTrainsInfoResponse>(
     "/virtual-train-api/api/v1/trein",
     {
-      params: { ids: trains.map((t) => t.ritId).join(","), all: false },
+      params: {
+        features: "zitplaats",
+        ids: trains.map((t) => t.ritId).join(","),
+        all: false,
+      },
     }
   );
 
