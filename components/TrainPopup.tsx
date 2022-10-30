@@ -1,18 +1,38 @@
+/* eslint-disable @next/next/no-img-element */
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { JourneyDetails } from "../types/getJourneyDetailsResponse";
-import { Trein } from "../types/getTrainsResponse";
+import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
 import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
 import getDistanceFromGPS from "../helpers/getDistanceFromGPS";
+import Link from "next/link";
 
 const formatDelay = (delay: number) => {
   const d = delay / 60;
   return Math.round(d);
 };
 
-export default function TrainPopup({ train }: { train: Trein }) {
+function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
+  return (
+    <div className="is-flex" style={{ overflowX: "scroll", height: "3rem" }}>
+      {train.info?.materieeldelen[0].bakken
+        .filter((p) => p.afbeelding)
+        .map((p) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.afbeelding?.url || ""}
+            alt={p.afbeelding.url}
+            key={p.afbeelding.url}
+            height="2rem"
+          />
+        ))}
+    </div>
+  );
+}
+
+export default function TrainPopup({ train }: { train: TreinWithInfo }) {
   const { data } = useQuery(
     ["train", train.treinNummer],
     async () => {
@@ -25,11 +45,13 @@ export default function TrainPopup({ train }: { train: Trein }) {
   );
 
   return (
-    <div>
+    <div style={{ width: "22rem" }}>
       <h1 className="is-size-5">
         🚂 {train.type} naar {/* {train.} */}
         {data?.stops[data.stops.length - 1].stop.name || ""}
       </h1>
+
+      <TrainPartsVisualized train={train} />
 
       <ul>
         <li>
@@ -86,6 +108,9 @@ export default function TrainPopup({ train }: { train: Trein }) {
           </tbody>
         </table>
       </div>
+      <Link href={`/train/${train.treinNummer}`}>
+        <a>Meer info {"->"}</a>
+      </Link>
     </div>
   );
 }
