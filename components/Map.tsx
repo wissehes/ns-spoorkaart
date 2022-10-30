@@ -84,21 +84,6 @@ export default function Map() {
         </LayersControl.Overlay>
         <LayersControl.Overlay name="Laat treinen zien" checked>
           <TrainMarkers />
-          {/* <LayerGroup>
-            {trainQuery.data &&
-              trainQuery.data.map((train) => (
-                <Marker
-                  key={train.ritId}
-                  position={[train.lat, train.lng]}
-                  icon={types[train.type] || sprinterIcon}
-                  zIndexOffset={1000}
-                >
-                  <Popup className={styles.popup}>
-                    <TrainPopup train={train} />
-                  </Popup>
-                </Marker>
-              ))}
-          </LayerGroup> */}
         </LayersControl.Overlay>
       </LayersControl>
     </MapContainer>
@@ -111,7 +96,7 @@ function StationMarkers() {
   const stationQuery = useStations();
   const map = useMap();
   map.on("zoomend", () => {
-    if (map.getZoom() > 13) {
+    if (map.getZoom() > 12) {
       setStations(true);
     } else setStations(false);
   });
@@ -127,7 +112,7 @@ function StationMarkers() {
             zIndexOffset={1}
             icon={NSIcon}
           >
-            <Popup className={styles.popup}>
+            <Popup className={styles.popup} maxWidth={1200}>
               <StationPopup station={station} />
             </Popup>
           </Marker>
