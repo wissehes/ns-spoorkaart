@@ -20,8 +20,15 @@ export default function StationPopup({ station }: { station: SmallStation }) {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <h1 className="is-size-5">🚉 Station {station.namen.lang}</h1>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <h1 className="is-size-5">
+        <b>🚉 Station {station.namen.lang}</b>
+      </h1>
       <p>
         Sporen: <b>{station.sporen.map((s) => s.spoorNummer).join(", ")}</b>
       </p>
