@@ -2,23 +2,29 @@ import maplibreGl from "maplibre-gl";
 import Map, {
   FullscreenControl,
   GeolocateControl,
+  Layer,
   MapProvider,
   Marker,
   NavigationControl,
   Popup,
   ScaleControl,
+  Source,
   useMap,
 } from "react-map-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import useStations from "../hooks/useStations";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import useTrains from "../hooks/useTrains";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 import TrainPopup from "./TrainPopup";
 import { SmallStation } from "../types/getStationsResponse";
 import StationPopup from "./StationPopup";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { getMapGeoJSONResponse } from "../types/getMapGeoJSONResponse";
+
 type TrainIcon = {
   url: string;
   width: number;
@@ -47,11 +53,20 @@ const types: TrainTypes = {
   },
 };
 
-export default function NewMap() {
-  //   const stationQuery = useStations();
-  //   const trainQuery = useTrains();
+const layerStyle = {
+  id: "point",
+  type: "circle",
+  paint: {
+    "circle-radius": 10,
+    "circle-color": "#007cbf",
+  },
+};
 
-  //   const [popup, setPopup] = useState<TreinWithInfo | SmallStation | null>(null);
+export default function NewMap() {
+  const trackQuery = useQuery(["spoorkaart"], async () => {
+    const { data } = await axios.get<getMapGeoJSONResponse>("/api/spoorkaart");
+    return data;
+  });
 
   return (
     <MapProvider>
@@ -72,6 +87,16 @@ export default function NewMap() {
         <NavigationControl position="top-left" />
         <ScaleControl />
 
+        {trackQuery.data && (
+          // @ts-ignore
+          <Source type="geojson" data={trackQuery.data.payload}>
+            <Layer
+              type="line"
+              paint={{ "line-color": "#979797", "line-width": 1.5 }}
+            />
+          </Source>
+        )}
+
         <StationMarkers />
 
         <TrainMarkers />
@@ -83,6 +108,16 @@ export default function NewMap() {
 function TrainMarkers() {
   const trainQuery = useTrains();
   const [chosenTrain, setTrain] = useState<TreinWithInfo | null>(null);
+  const actualChosenTrain = useMemo(() => {
+    const found = trainQuery.data?.find(
+      (t) => t.treinNummer == chosenTrain?.treinNummer
+    );
+    if (found && found.lat == chosenTrain?.lat) {
+      return chosenTrain;
+    } else {
+      return found;
+    }
+  }, [trainQuery, chosenTrain]);
 
   return (
     <>
@@ -98,26 +133,38 @@ function TrainMarkers() {
           }}
           style={{ cursor: "pointer" }}
         >
-          <Image
-            src={types[t.type].url}
-            alt={t.ritId}
-            width={types[t.type].width}
-            height={types[t.type].height}
-          />
+          {t.info?.materieeldelen[0].type ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/api/image/${encodeURIComponent(
+                t.info?.materieeldelen[0].type
+              )}`}
+              alt={t.ritId}
+              // height="20px"
+              style={{ height: "30px" }}
+            />
+          ) : (
+            <Image
+              src={types[t.type].url}
+              alt={t.ritId}
+              width={types[t.type].width}
+              height={types[t.type].height}
+            />
+          )}
         </Marker>
       ))}
 
-      {chosenTrain && (
+      {actualChosenTrain && (
         <Popup
-          longitude={chosenTrain.lng}
-          latitude={chosenTrain.lat}
+          longitude={actualChosenTrain.lng}
+          latitude={actualChosenTrain.lat}
           onClose={() => setTrain(null)}
           anchor="bottom"
           maxWidth="350"
           //   style={{ width: "50px", height: "50px" }}
           style={{ color: "black" }}
         >
-          <TrainPopup train={chosenTrain} />
+          <TrainPopup train={actualChosenTrain} />
         </Popup>
       )}
     </>
