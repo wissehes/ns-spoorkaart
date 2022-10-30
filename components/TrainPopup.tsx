@@ -8,6 +8,7 @@ import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
 import getDistanceFromGPS from "../helpers/getDistanceFromGPS";
 import Link from "next/link";
+import { Zitplaatsen } from "../types/getTrainInfoResponse";
 
 const formatDelay = (delay: number) => {
   const d = delay / 60;
@@ -16,21 +17,58 @@ const formatDelay = (delay: number) => {
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
-    <div className="is-flex" style={{ overflowX: "scroll", height: "3rem" }}>
-      {train.info?.materieeldelen[0].bakken
-        .filter((p) => p.afbeelding)
-        .map((p) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.afbeelding?.url || ""}
-            alt={p.afbeelding.url}
-            key={p.afbeelding.url}
-            height="2rem"
-          />
-        ))}
+    <div style={{ height: "4rem", overflowX: "auto" }}>
+      <div className="is-flex" style={{ height: "3rem" }}>
+        {train.info?.materieeldelen[0].bakken
+          .filter((p) => p.afbeelding)
+          .map((p) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={p.afbeelding?.url || ""}
+              alt={p.afbeelding.url}
+              key={p.afbeelding.url}
+              height="2rem"
+            />
+          ))}
+      </div>
     </div>
   );
 }
+
+const TrainPopupHeader = ({
+  train,
+  journey,
+}: {
+  train: TreinWithInfo;
+  journey?: JourneyDetails;
+}) => {
+  const product = journey?.stops[0].departures[0].product;
+
+  // const;
+  const destination =
+    journey?.stops[0].destination ||
+    journey?.stops[journey.stops.length - 1].stop.name ||
+    "?";
+
+  return (
+    <h1 className="is-size-5">
+      🚂 {product?.operatorName} {product?.longCategoryName || train.type} naar{" "}
+      {destination}
+    </h1>
+  );
+};
+
+const calcSeats = (z?: Zitplaatsen) => {
+  if (!z) return "?";
+  const totaal =
+    z.zitplaatsEersteKlas +
+    z.zitplaatsEersteKlas +
+    z.klapstoelEersteKlas +
+    z.klapstoelTweedeKlas +
+    z.staanplaatsTweedeKlas +
+    z.staanplaatsEersteKlas;
+  return totaal;
+};
 
 export default function TrainPopup({ train }: { train: TreinWithInfo }) {
   const { data } = useQuery(
@@ -44,28 +82,43 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
     { refetchOnWindowFocus: false }
   );
 
+  // const zitplaatsen = useMemo
+
   return (
-    <div style={{ width: "22rem" }}>
-      <h1 className="is-size-5">
-        🚂 {train.type} naar {/* {train.} */}
-        {data?.stops[data.stops.length - 1].stop.name || ""}
-      </h1>
+    <div
+      style={{
+        width: "22rem",
+      }}
+    >
+      <TrainPopupHeader train={train} journey={data} />
 
       <TrainPartsVisualized train={train} />
 
       <ul>
         <li>
-          Type{" "}
-          <b>
-            {data && data.stops[0]?.departures[0]?.product.operatorName}{" "}
-            {data && data.stops[0]?.departures[0]?.product.longCategoryName}
-          </b>{" "}
-          @ <b>{Math.round(train.snelheid)}</b> km/u
+          Type <b>{train.info?.type}</b> @ <b>{Math.round(train.snelheid)}</b>{" "}
+          km/u
+        </li>
+        <li>
+          Zitplaatsen: {calcSeats(train.info?.materieeldelen[0].zitplaatsen)}
+        </li>
+        <li>
+          Richting:{" "}
+          <div
+            style={{
+              display: "inline-block",
+              transform: `rotate(${train.richting}deg)`,
+              width: "15px",
+              fontSize: "15px",
+            }}
+          >
+            ⬆️
+          </div>
         </li>
         <li>{data?.notes.map((a) => a.text).join(", ")}</li>
       </ul>
 
-      <div className={styles.trainstops}>
+      {/* <div className={styles.trainstops}>
         <h1 className="is-size-6">Haltes</h1>
 
         <table className="table">
@@ -107,7 +160,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
                 ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
       <Link href={`/train/${train.treinNummer}`}>
         <a>Meer info {"->"}</a>
       </Link>
