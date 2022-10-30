@@ -101,11 +101,11 @@ export default function TrainInfoPage({
       </section>
 
       <div className="container">
-        <div
-          className="box"
-          style={{ width: "100%", height: "500px", zIndex: 1 }}
-        >
-          <JourneyMap geojson={geojson} stops={stops} />
+        <div className="box">
+          <h1 className="is-size-3">Route</h1>
+          <div style={{ width: "100%", height: "500px", zIndex: 1 }}>
+            <JourneyMap geojson={geojson} stops={stops} />
+          </div>
         </div>
 
         {stops.map((a) => (
