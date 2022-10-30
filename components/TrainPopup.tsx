@@ -42,7 +42,7 @@ const TrainPopupHeader = ({
   train: TreinWithInfo;
   journey?: JourneyDetails;
 }) => {
-  const product = journey?.stops[0].departures[0].product;
+  const product = journey?.stops[0]?.departures[0]?.product;
 
   // const;
   const destination =
@@ -58,16 +58,26 @@ const TrainPopupHeader = ({
   );
 };
 
-const calcSeats = (z?: Zitplaatsen) => {
-  if (!z) return "?";
-  const totaal =
-    z.zitplaatsEersteKlas +
-    z.zitplaatsEersteKlas +
-    z.klapstoelEersteKlas +
-    z.klapstoelTweedeKlas +
-    z.staanplaatsTweedeKlas +
-    z.staanplaatsEersteKlas;
-  return totaal;
+const calcSeats = (t: TreinWithInfo) => {
+  if (!t.info?.materieeldelen[0]) return "?";
+
+  const seats = t.info?.materieeldelen
+    ?.map((m) => {
+      if (!m.zitplaatsen) return 0;
+      const z = m.zitplaatsen;
+
+      return (
+        z.zitplaatsEersteKlas +
+        z.zitplaatsEersteKlas +
+        z.klapstoelEersteKlas +
+        z.klapstoelTweedeKlas +
+        z.staanplaatsTweedeKlas +
+        z.staanplaatsEersteKlas
+      );
+    })
+    .reduce((prev, cur) => prev + cur);
+
+  return seats > 0 ? seats : "?";
 };
 
 export default function TrainPopup({ train }: { train: TreinWithInfo }) {
@@ -99,9 +109,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
           Type <b>{train.info?.type}</b> @ <b>{Math.round(train.snelheid)}</b>{" "}
           km/u
         </li>
-        <li>
-          Zitplaatsen: {calcSeats(train.info?.materieeldelen[0].zitplaatsen)}
-        </li>
+        <li>Zitplaatsen: {calcSeats(train)}</li>
         <li>
           Richting:{" "}
           <div
