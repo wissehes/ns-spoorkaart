@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Router from "next/router";
 import ProgressBar from "@badrap/bar-of-progress";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 
 const progress = new ProgressBar({
   size: 5,
@@ -14,6 +16,8 @@ const progress = new ProgressBar({
 
 function MyApp({ Component, pageProps }: AppProps) {
   const client = new QueryClient();
+
+  config.autoAddCss = false;
 
   Router.events.on("routeChangeStart", progress.start);
   Router.events.on("routeChangeError", progress.finish);
