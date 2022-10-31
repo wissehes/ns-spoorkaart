@@ -59,6 +59,7 @@ export default function NavBar() {
                   ({ stationType: t, sporen }) =>
                     t == "MEGA_STATION" || sporen.length > 7
                 )
+                .filter(({ land }) => land == "NL")
                 .map((s) => (
                   <Link key={s.code} href={`/stations/${s.code}`}>
                     <a className="navbar-item">{s.namen.lang}</a>

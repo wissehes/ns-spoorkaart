@@ -4,32 +4,25 @@ import axios from "axios";
 import { JourneyDetails } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
-import styles from "../styles/Map.module.css";
-import formatTime from "../helpers/formatTime";
-import getDistanceFromGPS from "../helpers/getDistanceFromGPS";
 import Link from "next/link";
-import { Zitplaatsen } from "../types/getTrainInfoResponse";
-
-const formatDelay = (delay: number) => {
-  const d = delay / 60;
-  return Math.round(d);
-};
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
     <div style={{ height: "4rem", overflowX: "auto" }}>
       <div className="is-flex" style={{ height: "3rem" }}>
-        {train.info?.materieeldelen[0].bakken
-          .filter((p) => p.afbeelding)
-          .map((p) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={p.afbeelding?.url || ""}
-              alt={p.afbeelding.url}
-              key={p.afbeelding.url}
-              height="2rem"
-            />
-          ))}
+        {train.info?.materieeldelen.map((m) =>
+          m.bakken
+            .filter((p) => p.afbeelding)
+            .map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.afbeelding?.url || ""}
+                alt={p.afbeelding.url}
+                key={p.afbeelding.url}
+                height="2rem"
+              />
+            ))
+        )}
       </div>
     </div>
   );
@@ -42,7 +35,7 @@ const TrainPopupHeader = ({
   train: TreinWithInfo;
   journey?: JourneyDetails;
 }) => {
-  const product = journey?.stops[0].departures[0].product;
+  const product = journey?.stops[0]?.departures[0]?.product;
 
   // const;
   const destination =
@@ -58,16 +51,26 @@ const TrainPopupHeader = ({
   );
 };
 
-const calcSeats = (z?: Zitplaatsen) => {
-  if (!z) return "?";
-  const totaal =
-    z.zitplaatsEersteKlas +
-    z.zitplaatsEersteKlas +
-    z.klapstoelEersteKlas +
-    z.klapstoelTweedeKlas +
-    z.staanplaatsTweedeKlas +
-    z.staanplaatsEersteKlas;
-  return totaal;
+const calcSeats = (t: TreinWithInfo) => {
+  if (!t.info?.materieeldelen[0]) return "?";
+
+  const seats = t.info?.materieeldelen
+    ?.map((m) => {
+      if (!m.zitplaatsen) return 0;
+      const z = m.zitplaatsen;
+
+      return (
+        z.zitplaatsEersteKlas +
+        z.zitplaatsEersteKlas +
+        z.klapstoelEersteKlas +
+        z.klapstoelTweedeKlas +
+        z.staanplaatsTweedeKlas +
+        z.staanplaatsEersteKlas
+      );
+    })
+    .reduce((prev, cur) => prev + cur);
+
+  return seats > 0 ? seats : "?";
 };
 
 export default function TrainPopup({ train }: { train: TreinWithInfo }) {
@@ -99,9 +102,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
           Type <b>{train.info?.type}</b> @ <b>{Math.round(train.snelheid)}</b>{" "}
           km/u
         </li>
-        <li>
-          Zitplaatsen: {calcSeats(train.info?.materieeldelen[0].zitplaatsen)}
-        </li>
+        <li>Zitplaatsen: {calcSeats(train)}</li>
         <li>
           Richting:{" "}
           <div
@@ -118,49 +119,6 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
         <li>{data?.notes.map((a) => a.text).join(", ")}</li>
       </ul>
 
-      {/* <div className={styles.trainstops}>
-        <h1 className="is-size-6">Haltes</h1>
-
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Station</th>
-              <th>Aankomsttijd</th>
-              <th>Afstand</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data &&
-              data.stops
-                .filter(
-                  ({ status }) =>
-                    status == "STOP" ||
-                    status == "ORIGIN" ||
-                    status == "DESTINATION"
-                )
-                .map((s, i) => (
-                  <tr key={s.stop.uicCode}>
-                    <th>{s.stop.name}</th>
-                    <th>
-                      {i == 0 && "Herkomst"}
-                      {i > 0 && formatTime(s.arrivals[0]?.plannedTime)}{" "}
-                      <span className="has-text-danger">
-                        {s.arrivals[0]?.delayInSeconds > 1 &&
-                          "+" + formatDelay(s.arrivals[0]?.delayInSeconds)}
-                      </span>
-                    </th>
-                    <th>
-                      {getDistanceFromGPS({
-                        location1: { lat: train.lat, lon: train.lng },
-                        location2: { lat: s.stop.lat, lon: s.stop.lng },
-                      })}{" "}
-                      km
-                    </th>
-                  </tr>
-                ))}
-          </tbody>
-        </table>
-      </div> */}
       <Link href={`/train/${train.treinNummer}`}>
         <a>Meer info {"->"}</a>
       </Link>

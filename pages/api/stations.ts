@@ -27,7 +27,8 @@ export default async function handler(
 
   const data = await getStations();
   const { stations } = new SmallStations(
-    data.payload.filter((s) => s.land == "NL")
+    data.payload
+    //.filter((s) => s.land == "NL")
   );
 
   const redisData: RedisStations = {
