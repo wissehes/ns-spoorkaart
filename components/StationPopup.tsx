@@ -34,7 +34,10 @@ export default function StationPopup({ station }: { station: SmallStation }) {
       </p>
 
       <div>
-        <table className="table">
+        <table
+          className={query.isLoading ? "table is-loading" : "table"}
+          style={{ width: "100%" }}
+        >
           <thead>
             <tr style={{ textAlign: "center", fontWeight: "bolder" }}>
               <th>Tijd</th>
@@ -59,6 +62,15 @@ export default function StationPopup({ station }: { station: SmallStation }) {
               ))}
           </tbody>
         </table>
+        {query.isLoading && (
+          <progress
+            style={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+            className="progress is-info"
+            max="100"
+          >
+            60%
+          </progress>
+        )}
       </div>
       <Link href={`/stations/${station.code}`}>
         <a>Meer info {"->"}</a>
