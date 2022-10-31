@@ -53,7 +53,7 @@ const types: TrainTypes = {
   },
 };
 
-export default function NewMap() {
+export default function TrainMap() {
   const trackQuery = useQuery(["spoorkaart"], async () => {
     const { data } = await axios.get<getMapGeoJSONResponse>("/api/spoorkaart");
     return data;
