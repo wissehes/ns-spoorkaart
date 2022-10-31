@@ -198,7 +198,10 @@ function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
           >
             <th>
               {checkIfDateHasPassed(
-                s.arrivals[0]?.actualTime || s.departures[0].actualTime
+                s.arrivals[0]?.actualTime ||
+                  s.departures[0]?.actualTime ||
+                  s.arrivals[0]?.plannedTime ||
+                  s.departures[0]?.plannedTime
               ) ? (
                 <FontAwesomeIcon type="regular" icon={faCircleCheck} />
               ) : (
@@ -223,7 +226,9 @@ function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
   );
 }
 
-const checkIfDateHasPassed = (date: string) => {
+const checkIfDateHasPassed = (date?: string) => {
+  if (!date) return true;
+
   const parsed = new Date(date);
   const now = new Date();
 
