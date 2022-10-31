@@ -17,23 +17,18 @@ import { useEffect, useMemo, useState } from "react";
 import bbox from "@turf/bbox";
 import { time } from "../../helpers/TrainPage";
 import useTrains from "../../hooks/useTrains";
+import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 
 export default function NewJourneyMap({
   geojson,
   stops,
-  trainId,
+  train,
 }: {
   geojson: NSGeoJSON;
   stops: Stop[];
-  trainId: string;
+  train?: TreinWithInfo;
 }) {
   const [popup, setPopup] = useState<Stop | null>(null);
-  const trains = useTrains();
-
-  const train = useMemo(
-    () => trains.data?.find((t) => t.ritId == trainId),
-    [trains, trainId]
-  );
 
   return (
     <MapProvider>
