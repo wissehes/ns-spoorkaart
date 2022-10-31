@@ -16,6 +16,7 @@ import {
   getGeoJSONResponse,
   NSGeoJSON,
 } from "../../../types/getGeoJSONResponse";
+import JourneyMap from "../../../components/TrainPage/JourneyMap";
 
 const getTrainData = (journey: JourneyDetails) => {
   const stop = journey.stops.find((s) => s.departures[0]);
@@ -33,15 +34,6 @@ export default function TrainInfoPage({
   const firstStop = getTrainData(journey);
   const product = firstStop?.departures[0]?.product;
   const destination = firstStop?.departures[0]?.destination.name;
-
-  const JourneyMap = useMemo(
-    () =>
-      dynamic(() => import("../../../components/TrainPage/JourneyMap"), {
-        loading: () => <></>,
-        ssr: false,
-      }),
-    []
-  );
 
   return (
     <>
@@ -104,7 +96,11 @@ export default function TrainInfoPage({
         <div className="box">
           <h1 className="is-size-3">Route</h1>
           <div style={{ width: "100%", height: "500px", zIndex: 1 }}>
-            <JourneyMap geojson={geojson} stops={stops} />
+            <JourneyMap
+              geojson={geojson}
+              stops={stops}
+              trainId={journey.productNumbers[0]}
+            />
           </div>
         </div>
 
