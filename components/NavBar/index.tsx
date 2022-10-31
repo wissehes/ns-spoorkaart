@@ -54,6 +54,11 @@ export default function NavBar() {
             <a className="navbar-link">Stations</a>
 
             <div className="navbar-dropdown" style={{ zIndex: 100000000 }}>
+              <Link href="/stations/">
+                <a className="navbar-item">Alle stations</a>
+              </Link>
+              <hr className="dropdown-divider" />
+
               {stations.data
                 ?.filter(
                   ({ stationType: t, sporen }) =>
