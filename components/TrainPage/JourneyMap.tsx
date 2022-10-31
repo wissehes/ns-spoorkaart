@@ -1,89 +1,151 @@
-import {
-  MapContainer,
-  TileLayer,
-  GeoJSON,
-  LayerGroup,
+import maplibreGl from "maplibre-gl";
+import Map, {
+  Layer,
+  MapProvider,
   Marker,
+  NavigationControl,
   Popup,
+  ScaleControl,
+  Source,
   useMap,
-} from "react-leaflet";
+} from "react-map-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+
 import { NSGeoJSON } from "../../types/getGeoJSONResponse";
 import { Stop } from "../../types/getJourneyDetailsResponse";
-import "leaflet/dist/leaflet.css";
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
-import "leaflet-defaulticon-compatibility";
-import { useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import bbox from "@turf/bbox";
 import { time } from "../../helpers/TrainPage";
+import useTrains from "../../hooks/useTrains";
 
-export default function JourneyMap({
+export default function NewJourneyMap({
   geojson,
   stops,
+  trainId,
 }: {
   geojson: NSGeoJSON;
   stops: Stop[];
+  trainId: string;
 }) {
+  const [popup, setPopup] = useState<Stop | null>(null);
+  const trains = useTrains();
+
+  const train = useMemo(
+    () => trains.data?.find((t) => t.ritId == trainId),
+    [trains, trainId]
+  );
+
   return (
-    <MapContainer
-      center={[52.1, 4.9]}
-      zoom={13}
-      style={{ height: "100%", zIndex: 1, borderRadius: "10px" }}
-      scrollWheelZoom={false}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <MapProvider>
+      <Map
+        id="map"
+        // ref={mapRef}
+        mapLib={maplibreGl}
+        style={{ height: "100%", zIndex: 1, borderRadius: "10px" }}
+        scrollZoom={false}
+        mapStyle="https://api.maptiler.com/maps/ea0be450-77fe-405d-8871-1f29aefe697a/style.json?key=Rs8qUKBURAgmwFrBW6Bj"
+        initialViewState={{
+          longitude: 4.9,
+          latitude: 52.1,
+          zoom: 7,
+        }}
+        mapboxAccessToken=""
+      >
+        <NavigationControl position="top-left" />
+        <ScaleControl />
 
-      <RenderGeo geo={geojson} />
+        <RenderGeo geo={geojson} />
 
-      <LayerGroup>
         {stops.map((s) => (
           <Marker
             key={s.id}
-            position={[s.stop.lat, s.stop.lng]}
-            // zIndexOffset={1}
-            // icon={NSIcon}
-          >
-            <Popup>
-              <StationPopup s={s} />
-            </Popup>
-          </Marker>
+            latitude={s.stop.lat}
+            longitude={s.stop.lng}
+            style={{ cursor: "pointer" }}
+            onClick={(e) => {
+              e.originalEvent.stopImmediatePropagation();
+              setPopup(s);
+            }}
+          ></Marker>
         ))}
-      </LayerGroup>
-    </MapContainer>
+
+        {train && (
+          <Marker
+            longitude={train.lng}
+            latitude={train.lat}
+            anchor="center"
+            style={{ cursor: "pointer" }}
+          >
+            {/*eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/image/${encodeURIComponent(
+                train.info?.materieeldelen[0].type || "default"
+              )}`}
+              alt={train.ritId}
+              // height="20px"
+              style={{ height: "30px" }}
+            />
+          </Marker>
+        )}
+
+        {popup && (
+          <Popup
+            longitude={popup.stop.lng}
+            latitude={popup.stop.lat}
+            onClose={() => setPopup(null)}
+          >
+            <StationPopup s={popup} />
+          </Popup>
+        )}
+      </Map>
+    </MapProvider>
   );
 }
 
 function StationPopup({ s }: { s: Stop }) {
   return (
-    <div style={{ lineHeight: "0px" }}>
-      <p>
-        <b>Station:</b> {s.stop.name}
-      </p>
-      {s.arrivals[0] && (
-        <p>
-          <b>Aankomst:</b> {time(s, "arr")}
-        </p>
-      )}
+    <div>
+      <ul>
+        <li>
+          <b>Station:</b> {s.stop.name}
+        </li>
+        {s.arrivals[0] && (
+          <li>
+            <b>Aankomst:</b> {time(s, "arr")}
+          </li>
+        )}
 
-      {s.departures[0] && (
-        <p>
-          <b>Vertrek:</b> {time(s, "dest")}
-        </p>
-      )}
+        {s.departures[0] && (
+          <li>
+            <b>Vertrek:</b> {time(s, "dest")}
+          </li>
+        )}
+      </ul>
     </div>
   );
 }
 
 function RenderGeo({ geo }: { geo: NSGeoJSON }) {
-  const map = useMap();
-  const parsed = bbox(geo);
+  const parsed = useMemo(() => bbox(geo), [geo]);
+  const { map } = useMap();
 
-  map.flyToBounds([
-    [parsed[1], parsed[0]],
-    [parsed[3], parsed[2]],
-  ]);
+  useEffect(() => {
+    map?.fitBounds(
+      [
+        [parsed[0], parsed[1]],
+        [parsed[2], parsed[3]],
+      ],
+      { padding: 50 }
+    );
+  }, [map, parsed]);
 
-  return <GeoJSON data={geo} />;
+  return (
+    // @ts-ignore
+    <Source type="geojson" data={geo}>
+      <Layer
+        type="line"
+        paint={{ "line-color": "#007cff", "line-width": 5, "line-blur": 2.5 }}
+      />
+    </Source>
+  );
 }
