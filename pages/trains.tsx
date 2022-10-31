@@ -1,26 +1,9 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-import dynamic from "next/dynamic";
 import NavBar from "../components/NavBar";
-
-// export async function getServerSideProps() {
-//   const trains = await getTrains();
-//   const stations = await getStations();
-//   const { stations: smallStations } = new SmallStations(stations.payload);
-
-//   return {
-//     props: {
-//       trains: trains.payload.treinen,
-//       stations: smallStations,
-//     },
-//   };
-// }
+import TrainMap from "../components/TrainMap";
 
 const Home = () => {
-  const MapWithNoSSR = dynamic(() => import("../components/Map"), {
-    ssr: false,
-  });
-
   return (
     <div>
       <Head>
@@ -31,7 +14,7 @@ const Home = () => {
 
       <main className={styles.leaflet}>
         <NavBar />
-        <MapWithNoSSR />
+        <TrainMap />
       </main>
     </div>
   );
