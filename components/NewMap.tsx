@@ -53,15 +53,6 @@ const types: TrainTypes = {
   },
 };
 
-const layerStyle = {
-  id: "point",
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#007cbf",
-  },
-};
-
 export default function NewMap() {
   const trackQuery = useQuery(["spoorkaart"], async () => {
     const { data } = await axios.get<getMapGeoJSONResponse>("/api/spoorkaart");
@@ -107,6 +98,8 @@ export default function NewMap() {
 
 function TrainMarkers() {
   const trainQuery = useTrains();
+  const { map } = useMap();
+
   const [chosenTrain, setTrain] = useState<TreinWithInfo | null>(null);
   const actualChosenTrain = useMemo(() => {
     const found = trainQuery.data?.find(
@@ -114,10 +107,16 @@ function TrainMarkers() {
     );
     if (found && found.lat == chosenTrain?.lat) {
       return chosenTrain;
-    } else {
+    } else if (found) {
+      map?.flyTo({
+        center: [found?.lng, found?.lat],
+        zoom: map.getZoom(),
+        animate: true,
+        duration: 500,
+      });
       return found;
     }
-  }, [trainQuery, chosenTrain]);
+  }, [trainQuery, chosenTrain, map]);
 
   return (
     <>

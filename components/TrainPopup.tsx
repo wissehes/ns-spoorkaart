@@ -4,32 +4,25 @@ import axios from "axios";
 import { JourneyDetails } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
-import styles from "../styles/Map.module.css";
-import formatTime from "../helpers/formatTime";
-import getDistanceFromGPS from "../helpers/getDistanceFromGPS";
 import Link from "next/link";
-import { Zitplaatsen } from "../types/getTrainInfoResponse";
-
-const formatDelay = (delay: number) => {
-  const d = delay / 60;
-  return Math.round(d);
-};
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
     <div style={{ height: "4rem", overflowX: "auto" }}>
       <div className="is-flex" style={{ height: "3rem" }}>
-        {train.info?.materieeldelen[0].bakken
-          .filter((p) => p.afbeelding)
-          .map((p) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={p.afbeelding?.url || ""}
-              alt={p.afbeelding.url}
-              key={p.afbeelding.url}
-              height="2rem"
-            />
-          ))}
+        {train.info?.materieeldelen.map((m) =>
+          m.bakken
+            .filter((p) => p.afbeelding)
+            .map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.afbeelding?.url || ""}
+                alt={p.afbeelding.url}
+                key={p.afbeelding.url}
+                height="2rem"
+              />
+            ))
+        )}
       </div>
     </div>
   );

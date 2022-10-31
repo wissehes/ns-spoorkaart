@@ -64,7 +64,6 @@ export default function DepartureCard({
           </div>
         </div>
         <div>
-          {/* <p>Spoor {d.departure.plannedTrack}</p> */}
           <SpoorIcon spoorNr={d.departure.plannedTrack} />
           <p>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</p>
           <p>
@@ -75,12 +74,12 @@ export default function DepartureCard({
       <div className="is-flex" style={{ overflow: "scroll", height: "2.5rem" }}>
         {d.stop?.actualStock?.trainParts
           .filter((p) => p.image)
-          .map((p) => (
+          .map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={p.image?.uri || ""}
               alt={p.stockIdentifier}
-              key={p.stockIdentifier}
+              key={p.stockIdentifier + i.toString()}
               //   layout="fill"
             />
           ))}
