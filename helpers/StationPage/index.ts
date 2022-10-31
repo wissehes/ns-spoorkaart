@@ -3,20 +3,35 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/nl";
 dayjs.extend(relativeTime);
 
-export const formatStationType = (type: string) => {
-  switch (type) {
-    case "MEGA_STATION":
-      return "Megastation";
-    case "KNOOPPUNT_STOPTREIN_STATION":
-      return "Stoptrijn knooppunt";
-    case "KNOOPPUNT_INTERCITY_STATION":
-      return "Intercity knooppunt";
-    case "STOPTREIN_STATION":
-      return "Stoptrein station";
-    default:
-      return type;
-  }
+const stationTypes: { [key: string]: string } = {
+  MEGA_STATION: "Megastation",
+  KNOOPPUNT_STOPTREIN_STATION: "Stoptreinnenknooppunt",
+  KNOOPPUNT_INTERCITY_STATION: "Intercityknooppunt",
+  KNOOPPUNT_SNELTREIN_STATION: "Sneltreinenknooppunt",
+  STOPTREIN_STATION: "Stoptrein station",
+  SNELTREIN_STATION: "Sneltrein station",
+  INTERCITY_STATION: "Intercitystation",
 };
+
+export const formatStationType = (type: string) => {
+  return stationTypes[type] || type;
+};
+
+export const countries: { [key: string]: { name: string; emoji: string } } = {
+  D: { name: "Duitsland", emoji: "🇩🇪" },
+  B: { name: "België", emoji: "🇧🇪" },
+  A: { name: "Oostenrijk", emoji: "🇦🇹" },
+  I: { name: "Italië", emoji: "🇮🇹" },
+  NL: { name: "Nederland", emoji: "🇳🇱" },
+  GB: { name: "Verenigd Koninkrijk", emoji: "🇬🇧" },
+  CH: { name: "Zwitserland", emoji: "🇨🇭" },
+  DK: { name: "Denemarken", emoji: "🇩🇰" },
+  F: { name: "Frankrijk", emoji: "🇫🇷" },
+  S: { name: "Zweden", emoji: "🇸🇪" },
+};
+
+export const formatCountry = (country: string) =>
+  countries[country] || { name: country, emoji: country };
 
 export const departureStatus = (status: string) => {
   switch (status) {
