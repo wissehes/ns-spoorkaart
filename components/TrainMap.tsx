@@ -70,6 +70,7 @@ export default function TrainMap() {
           latitude: 52.1,
           zoom: 7,
         }}
+        minZoom={5}
       >
         <GeolocateControl position="top-left" />
         <FullscreenControl position="top-left" />
