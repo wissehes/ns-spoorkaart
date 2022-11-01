@@ -130,7 +130,8 @@ function RenderGeo({ geo }: { geo: NSGeoJSON }) {
         [parsed[0], parsed[1]],
         [parsed[2], parsed[3]],
       ],
-      { padding: 50 }
+      { padding: { top: 50, left: 40, right: 40, bottom: 20 } }
+      // { padding: 50 }
     );
   }, [map, parsed]);
 
