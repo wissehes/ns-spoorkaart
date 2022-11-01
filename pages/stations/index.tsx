@@ -11,18 +11,28 @@ import {
   countries,
   formatCountry,
   formatStationType,
+  stationTypes,
 } from "../../helpers/StationPage";
 import useStations from "../../hooks/useStations";
+import { SmallStation } from "../../types/getStationsResponse";
 
 export default function StationsPage() {
   const [searchValue, setSearchValue] = useState("");
-  const [selectedCountry, setCountry] = useState("");
+  const [selectedCountry, setCountry] = useState("NL");
+  const [selectedType, setType] = useState("");
   const stations = useStations();
 
   const searched = useMemo(() => {
-    const filtered = stations.data?.filter(({ land }) =>
-      selectedCountry.length ? land == selectedCountry : true
-    );
+    let filtered: SmallStation[] = stations.data || [];
+
+    if (selectedCountry.length) {
+      filtered = filtered.filter(({ land }) => land == selectedCountry);
+    }
+    if (selectedType.length) {
+      filtered = filtered.filter(
+        ({ stationType }) => stationType == selectedType
+      );
+    }
 
     if (searchValue.length > 0) {
       return filtered?.filter(
@@ -33,7 +43,7 @@ export default function StationsPage() {
     } else {
       return filtered;
     }
-  }, [searchValue, selectedCountry, stations]);
+  }, [searchValue, selectedCountry, selectedType, stations]);
 
   return (
     <div>
@@ -81,6 +91,22 @@ export default function StationsPage() {
                   {Object.entries(countries).map(([id, c]) => (
                     <option key={id} value={id}>
                       {c.emoji} {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="select">
+                <select
+                  onChange={(e) => setType(e.target.value)}
+                  value={selectedType}
+                >
+                  <option defaultChecked value="">
+                    Alle types
+                  </option>
+                  {Object.entries(stationTypes).map(([id, c]) => (
+                    <option key={id} value={id}>
+                      {c}
                     </option>
                   ))}
                 </select>
@@ -135,6 +161,8 @@ export default function StationsPage() {
             )}
           </div>
         </div>
+
+        <div style={{ padding: "2.5rem" }} />
       </main>
     </div>
   );
