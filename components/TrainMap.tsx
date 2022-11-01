@@ -13,17 +13,15 @@ import Map, {
 } from "react-map-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import useStations from "../hooks/useStations";
-import { useMemo, useState } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import useTrains from "../hooks/useTrains";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 import TrainPopup from "./TrainPopup";
-import { SmallStation } from "../types/getStationsResponse";
-import StationPopup from "./StationPopup";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getMapGeoJSONResponse } from "../types/getMapGeoJSONResponse";
+import { useRouter } from "next/router";
+import StationMarkers from "./Map/StationMarkers";
 
 type TrainIcon = {
   url: string;
@@ -99,8 +97,11 @@ export default function TrainMap() {
 function TrainMarkers() {
   const trainQuery = useTrains();
   const { map } = useMap();
-
   const [chosenTrain, setTrain] = useState<TreinWithInfo | null>(null);
+  const [loadedTrain, setLoadedTrain] = useState<string | null>(null);
+
+  const router = useRouter();
+
   const actualChosenTrain = useMemo(() => {
     const found = trainQuery.data?.find(
       (t) => t.treinNummer == chosenTrain?.treinNummer
@@ -118,6 +119,24 @@ function TrainMarkers() {
     }
   }, [trainQuery, chosenTrain, map]);
 
+  useEffect(() => {
+    const query = router.query?.train;
+    if (!query || typeof query !== "string" || !trainQuery.data) return;
+
+    const foundTrain = trainQuery.data?.find(({ ritId }) => ritId == query);
+
+    if (foundTrain) {
+      router.push("/trains", undefined, { shallow: true });
+      setTrain(foundTrain);
+      map?.flyTo({
+        animate: true,
+        duration: 1000,
+        zoom: 15,
+        center: { lat: foundTrain.lat, lon: foundTrain.lng },
+      });
+    }
+  }, [router, map, trainQuery]);
+
   return (
     <>
       {trainQuery.data?.map((t) => (
@@ -132,24 +151,14 @@ function TrainMarkers() {
           }}
           style={{ cursor: "pointer" }}
         >
-          {t.info?.materieeldelen[0].type ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={`/api/image/${encodeURIComponent(
-                t.info?.materieeldelen[0].type
-              )}`}
-              alt={t.ritId}
-              // height="20px"
-              style={{ height: "30px" }}
-            />
-          ) : (
-            <Image
-              src={types[t.type].url}
-              alt={t.ritId}
-              width={types[t.type].width}
-              height={types[t.type].height}
-            />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/image/${encodeURIComponent(
+              t.info?.materieeldelen[0]?.type || "default"
+            )}`}
+            alt={t.ritId}
+            style={{ height: "30px" }}
+          />
         </Marker>
       ))}
 
@@ -164,60 +173,6 @@ function TrainMarkers() {
           style={{ color: "black" }}
         >
           <TrainPopup train={actualChosenTrain} />
-        </Popup>
-      )}
-    </>
-  );
-}
-
-function StationMarkers() {
-  const [showStations, setStations] = useState(false);
-  const [chosenStation, setStation] = useState<SmallStation | null>(null);
-
-  const stationQuery = useStations();
-  const { map } = useMap();
-
-  map?.on("zoomend", () => {
-    if (map.getZoom() > 11) {
-      setStations(true);
-    } else setStations(false);
-  });
-
-  return (
-    <>
-      {showStations &&
-        stationQuery.data?.map((s) => (
-          <Marker
-            key={s.code}
-            longitude={s.lng}
-            latitude={s.lat}
-            anchor="center"
-            onClick={(e) => {
-              e.originalEvent.stopPropagation();
-              setStation(s);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <Image
-              src="/assets/NS/logo.png"
-              alt={s.code}
-              width="40"
-              height="15.9"
-            />
-          </Marker>
-        ))}
-
-      {chosenStation && (
-        <Popup
-          longitude={chosenStation.lng}
-          latitude={chosenStation.lat}
-          onClose={() => setStation(null)}
-          anchor="bottom"
-          maxWidth="350"
-          //   style={{ width: "50px", height: "50px" }}
-          style={{ color: "black" }}
-        >
-          <StationPopup station={chosenStation} />
         </Popup>
       )}
     </>
