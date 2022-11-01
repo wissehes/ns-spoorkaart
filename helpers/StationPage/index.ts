@@ -3,7 +3,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/nl";
 dayjs.extend(relativeTime);
 
-const stationTypes: { [key: string]: string } = {
+export const stationTypes: { [key: string]: string } = {
   MEGA_STATION: "Megastation",
   KNOOPPUNT_STOPTREIN_STATION: "Stoptreinnenknooppunt",
   KNOOPPUNT_INTERCITY_STATION: "Intercityknooppunt",
