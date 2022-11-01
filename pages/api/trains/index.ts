@@ -63,7 +63,7 @@ async function downloadAndSaveImage(trains: TreinWithInfo[]) {
     if (!train.info) continue;
 
     const mat = train.info.materieeldelen[0];
-    const url = mat.bakken[0]?.afbeelding?.url;
+    const url = mat?.bakken[0]?.afbeelding?.url;
     if (!mat || !url) continue;
 
     const exists = await Redis.exists(mat.type);
