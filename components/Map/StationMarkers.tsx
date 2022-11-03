@@ -29,7 +29,7 @@ export default function StationMarkers() {
         zoom: 15,
         center: { lat: foundStation.lat, lon: foundStation.lng },
       });
-    }
+    } else router.push("/trains", undefined, { shallow: true });
   }, [router, stationQuery, map]);
 
   map?.on("zoomend", () => {
