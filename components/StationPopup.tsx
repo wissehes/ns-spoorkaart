@@ -73,7 +73,7 @@ export default function StationPopup({ station }: { station: SmallStation }) {
         )}
       </div>
       <Link href={`/stations/${station.code}`}>
-        <a>Meer info {"->"}</a>
+        <a className="button is-small is-primary">Meer info</a>
       </Link>
     </div>
   );
