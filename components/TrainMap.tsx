@@ -99,7 +99,6 @@ function TrainMarkers() {
   const trainQuery = useTrains();
   const { map } = useMap();
   const [chosenTrain, setTrain] = useState<TreinWithInfo | null>(null);
-  const [loadedTrain, setLoadedTrain] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -122,6 +121,10 @@ function TrainMarkers() {
 
   useEffect(() => {
     const query = router.query?.train;
+    const stationQuery = router.query?.station;
+
+    if (stationQuery) setTrain(null);
+
     if (!query || typeof query !== "string" || !trainQuery.data) return;
 
     const foundTrain = trainQuery.data?.find(({ ritId }) => ritId == query);
