@@ -73,6 +73,20 @@ export default function NavBar() {
             </div>
           </div>
         </div>
+
+        <div className="navbar-end">
+          <Link href="/about">
+            <a className="navbar-item">Over</a>
+          </Link>
+          <a
+            href="https://github.com/wissehes/ns-spoorkaart"
+            target="_blank"
+            rel="noreferrer"
+            className="navbar-item"
+          >
+            GitHub
+          </a>
+        </div>
       </div>
     </nav>
   );
