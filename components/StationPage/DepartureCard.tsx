@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/nl";
 import SpoorIcon from "./SpoorIcon";
+import Link from "next/link";
 dayjs.extend(relativeTime);
 
 function formatTime(date: string) {
@@ -46,10 +47,12 @@ export default function DepartureCard({
             </p>
           </div>
           <div>
-            <h1 className="is-size-4">
-              {d.departure.product.longCategoryName} naar{" "}
-              <b>{d.departure.direction}</b>
-            </h1>
+            <Link href={`/train/${d.departure.product.number}`}>
+              <a className="is-size-4">
+                {d.departure.product.longCategoryName} naar{" "}
+                <b>{d.departure.direction}</b>
+              </a>
+            </Link>
             <h1>Van {d.stop?.departures[0]?.origin.name}</h1>
             {d.departure.routeStations.length > 0 && (
               <h3>
