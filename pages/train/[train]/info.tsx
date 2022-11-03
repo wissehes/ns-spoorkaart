@@ -64,7 +64,9 @@ export default function TrainInfoPage({
   const stops = journey.stops.filter(({ status }) => status !== "PASSING");
   const firstStop = getTrainData(journey);
   const product = firstStop?.departures[0]?.product;
-  const destination = firstStop?.departures[0]?.destination.name;
+  const destination =
+    firstStop?.departures[0]?.destination?.name ||
+    stops[stops.length - 1]?.stop?.name;
 
   return (
     <>
@@ -84,7 +86,10 @@ export default function TrainInfoPage({
             {destination}
           </p>
           <div className="hero-foot">
-            <div className="is-flex" style={{ gap: "1rem" }}>
+            <div
+              className="is-flex"
+              style={{ gap: "1rem", overflow: "auto", width: "100%" }}
+            >
               <p>Rit {product?.number || journey.productNumbers[0] || "?"}</p>
               <p>|</p>
               <p>Drukte: {firstStop?.departures[0]?.crowdForecast}</p>
@@ -100,27 +105,34 @@ export default function TrainInfoPage({
             </div>
 
             <div
-              className="is-flex"
-              style={{ overflow: "auto", height: "2.5rem" }}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                overflow: "auto",
+              }}
             >
               {journey.stops[0]?.actualStock?.trainParts
                 .filter((p) => p.image)
                 .map((p) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={p.image?.uri || ""}
-                    alt={p.stockIdentifier}
+                  <div
+                    className="is-flex"
+                    style={{ height: "3rem", width: "auto", minWidth: "auto" }}
                     key={p.stockIdentifier}
-                  />
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.image?.uri || ""}
+                      alt={p.stockIdentifier}
+                      style={{ height: "2rem", width: "auto" }}
+                    />
+                  </div>
                 ))}
             </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                overflow: "scroll",
-              }}
-            ></div>
+            <div style={{ marginTop: "1rem" }}>
+              {journey.notes.map((n) => (
+                <p key={n.text}>{n.text}</p>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -129,7 +141,7 @@ export default function TrainInfoPage({
 
         <div className="box">
           <h1 className="is-size-3">Route</h1>
-          <div style={{ width: "100%", height: "300px", zIndex: 1 }}>
+          <div style={{ width: "100%", zIndex: 1 }}>
             <JourneyMap geojson={geojson} stops={stops} train={train} />
           </div>
         </div>
@@ -245,17 +257,26 @@ function JourneyIsOld() {
         justifyContent: "center",
       }}
     >
-      <div
-        className="notification is-warning"
+      <article
+        className="message is-warning"
         style={{ width: "80%", margin: "1rem" }}
       >
-        <span className="icon-text">
-          <span className="icon ">
-            <FontAwesomeIcon icon={faTriangleExclamation} />
-          </span>
-          Deze reis is niet meer live.
-        </span>
-      </div>
+        <div className="message-header">
+          <p>Deze reis is niet (meer) live.</p>
+          {/* <button className="delete" aria-label="delete"></button> */}
+        </div>
+        <div className="message-body">
+          Dit kan een van meerdere redenen hebben:
+          <ol style={{ marginLeft: "2rem" }} type="A">
+            <li>De reis is afgelopen of nog niet begonnen.</li>
+            <li>
+              De reis is niet live te volgen (bij sommige arriva treinen of
+              buitenlandse vervoerders)
+            </li>
+            <li>De trein staat stil bij een station</li>
+          </ol>
+        </div>
+      </article>
     </div>
   );
 }
