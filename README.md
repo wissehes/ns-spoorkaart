@@ -3,10 +3,9 @@
 Een kaart met alle treinen en stations van de NS api :)
 
 ## to do
-- [ ] Pagina met alle (of alleen grote) stations
-- [ ] button to locate yourself
-- [ ] Show disruptions
-- [ ] train details page
+- [ ] Storingen laten zien
+
+
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
