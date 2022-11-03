@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { JourneyDetails } from "../types/getJourneyDetailsResponse";
+import { JourneyDetails, Stop } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
 import Link from "next/link";
@@ -44,14 +44,26 @@ const TrainPopupHeader = ({
     journey?.stops[0].destination ||
     journey?.stops[journey.stops.length - 1].stop.name ||
     "?";
+  const destinationCode = journey?.stops[journey.stops.length - 1]?.id.replace(
+    "_0",
+    ""
+  );
 
   return (
     <h1 className="is-size-5" style={{ marginBottom: "5px" }}>
       🚂 {product?.operatorName} {product?.longCategoryName || train.type} naar{" "}
-      {destination}
+      <TrainStationLink text={destination} id={destinationCode} />
     </h1>
   );
 };
+
+const TrainStationLink = ({ text, id }: { text: string; id?: string }) => (
+  <Link href={id ? `/trains?station=${id}` : ``}>
+    <a>
+      <b>{text}</b>
+    </a>
+  </Link>
+);
 
 const calcSeats = (t: TreinWithInfo) => {
   if (!t.info?.materieeldelen[0]) return "?";
@@ -107,7 +119,11 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
       <ul>
         {foundStation && (
           <li>
-            Volgend station: <b>{foundStation.namen.lang}</b>
+            <Link href={`/trains?station=${foundStation.code}`}>
+              <a>
+                Volgend station: <b>{foundStation.namen.lang}</b>
+              </a>
+            </Link>
           </li>
         )}
         <li>
