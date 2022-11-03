@@ -134,7 +134,7 @@ export default function TrainInfoPage({
           </div>
         </div>
 
-        <div className="box">
+        <div className="box" style={{ overflowX: "auto" }}>
           <h1 className="is-size-3">Reis</h1>
 
           <StopTable stops={stops} train={train} />
@@ -181,8 +181,8 @@ function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
           <th>Aankomst</th>
           <th>Vertrek</th>
           <th>Station</th>
-          <th>Spoor</th>
-          <th>Drukte</th>
+          <th style={{ textAlign: "center" }}>Spoor</th>
+          <th style={{ textAlign: "center" }}>Drukte</th>
         </tr>
       </thead>
 
@@ -196,7 +196,7 @@ function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
                 : ""
             }
           >
-            <th>
+            <td>
               {checkIfDateHasPassed(
                 s.arrivals[0]?.actualTime ||
                   s.departures[0]?.actualTime ||
@@ -207,18 +207,20 @@ function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
               ) : (
                 <FontAwesomeIcon type="regular" icon={faCircle} />
               )}
-            </th>
-            <th>
+            </td>
+            <td>
               {time(s, "arr")} {delayTime(s, "arr")}
-            </th>
-            <th>
+            </td>
+            <td>
               {time(s, "dest")} {delayTime(s, "dep")}
-            </th>
-            <th>{s.stop.name}</th>
-            <th>{s.arrivals[0]?.actualTrack || "?"}</th>
-            <th>
+            </td>
+            <td>{s.stop.name}</td>
+            <td style={{ textAlign: "center" }}>
+              {s.arrivals[0]?.actualTrack || "?"}
+            </td>
+            <td style={{ textAlign: "center" }}>
               <RushIcon stop={s} />
-            </th>
+            </td>
           </tr>
         ))}
       </tbody>
