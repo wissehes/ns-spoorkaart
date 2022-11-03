@@ -5,6 +5,8 @@ import { JourneyDetails } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
 import Link from "next/link";
+import useStations from "../hooks/useStations";
+import { useMemo } from "react";
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
@@ -44,7 +46,7 @@ const TrainPopupHeader = ({
     "?";
 
   return (
-    <h1 className="is-size-5">
+    <h1 className="is-size-5" style={{ marginBottom: "5px" }}>
       🚂 {product?.operatorName} {product?.longCategoryName || train.type} naar{" "}
       {destination}
     </h1>
@@ -61,11 +63,11 @@ const calcSeats = (t: TreinWithInfo) => {
 
       return (
         z.zitplaatsEersteKlas +
-        z.zitplaatsEersteKlas +
-        z.klapstoelEersteKlas +
-        z.klapstoelTweedeKlas +
-        z.staanplaatsTweedeKlas +
-        z.staanplaatsEersteKlas
+        z.zitplaatsTweedeKlas +
+        // z.klapstoelEersteKlas +
+        z.klapstoelTweedeKlas
+        // z.staanplaatsTweedeKlas +
+        // z.staanplaatsEersteKlas
       );
     })
     .reduce((prev, cur) => prev + cur);
@@ -85,7 +87,13 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
     { refetchOnWindowFocus: false }
   );
 
-  // const zitplaatsen = useMemo
+  const stations = useStations();
+
+  const foundStation = useMemo(() => {
+    if (!stations.data) return null;
+    const found = stations.data.find((s) => s.code == train.info?.station);
+    return found;
+  }, [stations, train]);
 
   return (
     <div
@@ -96,8 +104,12 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
       <TrainPopupHeader train={train} journey={data} />
 
       <TrainPartsVisualized train={train} />
-
       <ul>
+        {foundStation && (
+          <li>
+            Volgend station: <b>{foundStation.namen.lang}</b>
+          </li>
+        )}
         <li>
           Type <b>{train.info?.type}</b> @ <b>{Math.round(train.snelheid)}</b>{" "}
           km/u
@@ -120,7 +132,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
       </ul>
 
       <Link href={`/train/${train.treinNummer}`}>
-        <a>Meer info {"->"}</a>
+        <a className="button is-small is-primary">Meer info</a>
       </Link>
     </div>
   );
