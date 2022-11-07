@@ -5,7 +5,7 @@ dayjs.extend(relativeTime);
 
 export const stationTypes: { [key: string]: string } = {
   MEGA_STATION: "Megastation",
-  KNOOPPUNT_STOPTREIN_STATION: "Stoptreinnenknooppunt",
+  KNOOPPUNT_STOPTREIN_STATION: "Stoptreinenknooppunt",
   KNOOPPUNT_INTERCITY_STATION: "Intercityknooppunt",
   KNOOPPUNT_SNELTREIN_STATION: "Sneltreinenknooppunt",
   STOPTREIN_STATION: "Stoptrein station",
