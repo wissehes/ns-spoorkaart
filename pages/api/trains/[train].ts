@@ -12,13 +12,17 @@ export default async function handler(
   const {
     query: { train },
   } = req;
+  try {
+    const { data } = await NS.get<getJourneyDetailsResponse>(
+      "/reisinformatie-api/api/v2/journey",
+      {
+        params: { train },
+      }
+    );
 
-  const { data } = await NS.get<getJourneyDetailsResponse>(
-    "/reisinformatie-api/api/v2/journey",
-    {
-      params: { train },
-    }
-  );
-
-  res.status(200).json(data.payload);
+    res.status(200).json(data.payload);
+  } catch (e) {
+    console.error(e);
+    res.status(404).json({ message: "not found" });
+  }
 }
