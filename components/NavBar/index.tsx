@@ -46,8 +46,11 @@ export default function NavBar() {
                   : "navbar-item"
               }
             >
-              Home
+              Kaart
             </a>
+          </Link>
+          <Link href="/trains/list">
+            <a className="navbar-item">Treinen</a>
           </Link>
 
           <div className="navbar-item has-dropdown is-hoverable">
