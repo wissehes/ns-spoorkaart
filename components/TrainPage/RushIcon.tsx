@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CSSProperties } from "react";
 import { Stop } from "../../types/getJourneyDetailsResponse";
 
 import Rush0 from "./RushIcons/rush-0.svg";
@@ -20,12 +21,21 @@ const colors: { [key: string]: string } = {
   UNKNOWN: "#008670",
 };
 
-export default function RushIcon({ stop }: { stop: Stop }) {
+export default function RushIcon({
+  stop,
+  color = true,
+  style,
+}: {
+  stop: Stop;
+  color?: boolean;
+  style?: CSSProperties;
+}) {
   const busyness = stop.departures[0]?.crowdForecast || "UNKNOWN";
   const Icon = icons[busyness] || icons.UNKNOWN;
+  const iconColor = color ? colors[busyness] : "white";
 
   return (
-    <div style={{ fill: colors[busyness] }}>
+    <div style={{ ...style, fill: iconColor }}>
       <Icon />
     </div>
   );
