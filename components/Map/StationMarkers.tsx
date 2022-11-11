@@ -40,27 +40,26 @@ export default function StationMarkers() {
 
   return (
     <>
-      {showStations &&
-        stationQuery.data?.map((s) => (
-          <Marker
-            key={s.code}
-            longitude={s.lng}
-            latitude={s.lat}
-            anchor="center"
-            onClick={(e) => {
-              e.originalEvent.stopPropagation();
-              setStation(s);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <Image
-              src="/assets/NS/logo.png"
-              alt={s.code}
-              width="40"
-              height="15.9"
-            />
-          </Marker>
-        ))}
+      {stationQuery.data?.map((s) => (
+        <Marker
+          key={s.code}
+          longitude={s.lng}
+          latitude={s.lat}
+          anchor="center"
+          onClick={(e) => {
+            e.originalEvent.stopPropagation();
+            setStation(s);
+          }}
+          style={{ cursor: "pointer", opacity: showStations ? 1 : 0 }}
+        >
+          <Image
+            src="/assets/NS/logo.png"
+            alt={s.code}
+            width="40"
+            height="15.9"
+          />
+        </Marker>
+      ))}
 
       {chosenStation && (
         <Popup
