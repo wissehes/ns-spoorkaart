@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 // import { GeoJSONObject } from "leaflet";
 import NavBar from "../../../components/NavBar";
 import NS from "../../../helpers/NS";
@@ -18,21 +18,27 @@ import {
 } from "../../../types/getGeoJSONResponse";
 import JourneyMap from "../../../components/TrainPage/JourneyMap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTriangleExclamation,
-  faCircle,
-  faCircleCheck,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import useTrains from "../../../hooks/useTrains";
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
-import dayjs from "dayjs";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import RushIcon from "../../../components/TrainPage/RushIcon";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import SquareDisplay from "../../../components/SquareDisplay";
+import FacilityIcons from "../../../components/TrainPage/FacilityIcons";
 
 const getTrainData = (journey: JourneyDetails) => {
   const stop = journey.stops.find((s) => s.departures[0]);
   return stop;
+};
+
+const getCurrentStop = (journey: JourneyDetails, train?: TreinWithInfo) => {
+  const stopId = train?.info?.station; /*.replace("_0", "")*/
+  const foundStop = journey.stops.find((s) => s.id.replace("_0", "") == stopId);
+  if (foundStop) return foundStop;
+
+  return journey.stops.find((s) => s.departures[0]);
 };
 
 export default function TrainInfoPage({
@@ -61,8 +67,14 @@ export default function TrainInfoPage({
     [trains, journey]
   );
 
+  const currentStop = useMemo(
+    () => getCurrentStop(journey, train),
+    [journey, train]
+  );
+
   const stops = journey.stops.filter(({ status }) => status !== "PASSING");
   const firstStop = getTrainData(journey);
+
   const product = firstStop?.departures[0]?.product;
   const destination =
     firstStop?.departures[0]?.destination?.name ||
@@ -137,6 +149,24 @@ export default function TrainInfoPage({
               {journey.notes.map((n) => (
                 <p key={n.text}>{n.text}</p>
               ))}
+            </div>
+            <div className="is-flex">
+              {currentStop && (
+                <SquareDisplay title="Drukte">
+                  <RushIcon
+                    stop={currentStop}
+                    color={false}
+                    style={{ textAlign: "center" }}
+                  />
+                </SquareDisplay>
+              )}
+              {currentStop?.plannedStock?.trainParts[0]?.facilities && (
+                <FacilityIcons
+                  facilities={
+                    currentStop?.plannedStock?.trainParts[0]?.facilities
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
@@ -289,29 +319,36 @@ function JourneyIsOld() {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const train = context.params?.train;
 
-  const {
-    data: { payload: journey },
-  } = await NS.get<getJourneyDetailsResponse>(
-    "/reisinformatie-api/api/v2/journey",
-    {
-      params: { train },
-    }
-  );
+  try {
+    const {
+      data: { payload: journey },
+    } = await NS.get<getJourneyDetailsResponse>(
+      "/reisinformatie-api/api/v2/journey",
+      {
+        params: { train },
+      }
+    );
 
-  const geojson = await NS.get<getGeoJSONResponse>(
-    "/Spoorkaart-API/api/v1/traject.json",
-    {
-      params: {
-        stations: journey.stops.map((s) => s.id.replace("_0", "")).join(","),
+    const geojson = await NS.get<getGeoJSONResponse>(
+      "/Spoorkaart-API/api/v1/traject.json",
+      {
+        params: {
+          stations: journey.stops.map((s) => s.id.replace("_0", "")).join(","),
+        },
+      }
+    );
+
+    return {
+      props: {
+        initialJourney: journey,
+        trainId: train,
+        geojson: geojson.data.payload,
       },
-    }
-  );
-
-  return {
-    props: {
-      initialJourney: journey,
-      trainId: train,
-      geojson: geojson.data.payload,
-    },
-  };
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      notFound: true,
+    };
+  }
 };
