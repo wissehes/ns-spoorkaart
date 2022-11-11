@@ -128,7 +128,7 @@ export default function TrainInfoPage({
                 .map((p) => (
                   <div
                     className="is-flex"
-                    style={{ height: "3rem" }}
+                    style={{ height: "4rem" }}
                     key={p.stockIdentifier}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -138,7 +138,7 @@ export default function TrainInfoPage({
                       style={{
                         height: "auto",
                         width: "auto",
-                        maxHeight: "2.5rem",
+                        maxHeight: "4rem",
                         maxWidth: "fit-content",
                       }}
                     />
