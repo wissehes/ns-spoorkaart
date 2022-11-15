@@ -4,7 +4,8 @@ import NS from "./NS";
 
 export default async function getTrains() {
   const { data } = await NS.get<getTrainsResponse>(
-    "/virtual-train-api/api/vehicle"
+    "/virtual-train-api/api/vehicle",
+    { params: { features: "materieel" } }
   );
 
   return data;
