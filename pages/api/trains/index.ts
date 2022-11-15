@@ -3,14 +3,14 @@ import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import getTrains from "../../../helpers/getTrains";
 import NS from "../../../helpers/NS";
-import Redis from "../../../helpers/Redis";
 import { getMultipleTrainsInfoResponse } from "../../../types/getTrainInfoResponse";
-import { getTrainsResponse, Trein } from "../../../types/getTrainsResponse";
+import { Trein } from "../../../types/getTrainsResponse";
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 
 import Jimp from "jimp";
 // @ts-ignore
 import replaceColor from "replace-color";
+import DB from "../../../lib/DB";
 
 type Data = TreinWithInfo[];
 
@@ -38,6 +38,7 @@ export default async function handler(
   }
 
   await downloadAndSaveImage(treinenMetInfo);
+  await DB.saveTrains(treinenMetInfo);
 
   res.status(200).json(treinenMetInfo);
 }
@@ -50,12 +51,8 @@ export default async function handler(
  */
 
 async function downloadAndSaveImage(trains: TreinWithInfo[]) {
-  const filtered = trains.filter((t) => t.info?.materieeldelen[0]);
-
-  const exists = await Redis.exists(
-    filtered.map((t) => t.info?.materieeldelen[0].type || "")
-  );
-  if (exists == filtered.length) {
+  const exists = await DB.imageArrayExists();
+  if (exists) {
     return;
   }
 
@@ -66,12 +63,10 @@ async function downloadAndSaveImage(trains: TreinWithInfo[]) {
     const url = mat?.bakken[0]?.afbeelding?.url;
     if (!mat || !url) continue;
 
-    const exists = await Redis.exists(mat.type);
+    const exists = await DB.trainImgExists(mat.type);
     if (exists) {
       continue;
     }
-
-    // const { data } = await NS.get(url, { responseType: "arraybuffer" });
 
     const img = (await Jimp.read(url))
       .resize(Jimp.AUTO, 50)
@@ -89,12 +84,11 @@ async function downloadAndSaveImage(trains: TreinWithInfo[]) {
         replaceColor: "#00000000",
       },
     });
-    // console.log(imgReplaced);
-    const imgReplacedBuffer = await imgReplaced.getBufferAsync(Jimp.MIME_PNG);
 
+    const imgReplacedBuffer = await imgReplaced.getBufferAsync(Jimp.MIME_PNG);
     const base64 = Buffer.from(imgReplacedBuffer, "binary").toString("base64");
 
-    await Redis.set(mat.type, base64);
+    await DB.saveTrainImg({ type: mat.type, base64data: base64 });
   }
 }
 
