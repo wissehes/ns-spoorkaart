@@ -7,6 +7,8 @@ Naast de kaart met alle treinen, kan je ook de stations zien (als je inzoomt). J
 
 ## to do
 - [ ] Storingen laten zien
+- [ ] De URLs "/train/[train]" vervangen met "/journey/[journey]" aangezien het een reis is.
+  - [ ] "/train/[train]" zou dan kunnen verwijzen naar het treinstel ipv een reis.
 
 ## Screenshots
 ### Kaart
