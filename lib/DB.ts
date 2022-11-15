@@ -52,9 +52,10 @@ export class DBClient {
   }
 
   public async saveTrains(trains: TreinWithInfo[]) {
+    const date = new Date();
     const data: SavedTrains = {
-      trains: [],
-      date: new Date(),
+      trains: {},
+      date: date,
     };
 
     for (const train of trains) {
@@ -66,8 +67,9 @@ export class DBClient {
           ritId: train.ritId,
           snelheid: train.snelheid,
           station: train.info?.station,
+          date,
         };
-        data.trains.push(trainData);
+        data.trains[materieel] = trainData;
       }
     }
 
@@ -84,9 +86,17 @@ export class DBClient {
         if (dateObj.getTime() + 5000 > new Date().getTime()) return;
       }
     }
-    console.log("saving trains,");
 
     await this.client.json.arrAppend(this.TRAINDATA, "$.data", data);
+  }
+
+  public async getTrain(materieel: number) {
+    const found =
+      (await this.client.json.get(this.TRAINDATA, {
+        path: [`$.data.*.trains.${materieel}`],
+      })) || [];
+
+    return found as SavedTrain[];
   }
 
   client = createClient({
@@ -103,7 +113,9 @@ type GetTrainImagesRedis = { images: { base64: string; type: string }[] }[];
 type GetTrainData = { data: SavedTrains[] };
 
 type SavedTrains = {
-  trains: SavedTrain[];
+  trains: {
+    [key: string]: SavedTrain;
+  };
   date: Date;
 };
 
@@ -114,4 +126,5 @@ type SavedTrain = {
   lng: number;
   snelheid: number;
   station?: string;
+  date: Date;
 };
