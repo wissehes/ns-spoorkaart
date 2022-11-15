@@ -2,7 +2,7 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Head from "next/head";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import NavBar from "../../components/NavBar";
 import useStations from "../../hooks/useStations";
@@ -11,7 +11,9 @@ import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 
 const filterFunction = (t: TreinWithInfo, searchValue: string) => {
   return (
+    t.type.toLowerCase().includes(searchValue) ||
     t.treinNummer.toString().includes(searchValue) ||
+    t.info?.vervoerder.toLowerCase().includes(searchValue) ||
     t.info?.materieeldelen.find(
       (s) =>
         s.materieelnummer?.toString().includes(searchValue) ||
@@ -92,6 +94,7 @@ const Home = () => {
             <table className="table is-hoverable is-fullwidth">
               <thead>
                 <tr>
+                  <th>Vervoerder</th>
                   <th>Type</th>
                   <th>Materieel</th>
                   <th>Nummers</th>
@@ -103,8 +106,11 @@ const Home = () => {
               <tbody>
                 {items.map((t) => (
                   <tr key={t.treinNummer}>
+                    <td>{t.info?.vervoerder}</td>
                     <td>{t.type}</td>
-                    <td>{t.info?.materieeldelen[0].type}</td>
+                    <td>
+                      {t.info?.materieeldelen.map((t) => t.type).join(", ")}
+                    </td>
                     <td>
                       {t.info?.materieeldelen
                         .filter((t) => t.materieelnummer)
@@ -114,8 +120,8 @@ const Home = () => {
                     <td>{Math.round(t.snelheid)} km/u</td>
                     <td>{getStation(t.info?.station)}</td>
                     <td>
-                      <Link href={`/train/${t.treinNummer}`}>
-                        <button className="button is-primary">Info</button>
+                      <Link href={`/journey/${t.treinNummer}`}>
+                        <a className="button is-primary">Info</a>
                       </Link>
                     </td>
                   </tr>

@@ -47,7 +47,7 @@ export default function DepartureCard({
             </p>
           </div>
           <div>
-            <Link href={`/train/${d.departure.product.number}`}>
+            <Link href={`/journey/${d.departure.product.number}`}>
               <a className="is-size-4">
                 {d.departure.product.longCategoryName} naar{" "}
                 <b>{d.departure.direction}</b>

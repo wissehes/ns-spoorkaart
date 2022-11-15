@@ -147,7 +147,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
         <li>{data?.notes.map((a) => a.text).join(", ")}</li>
       </ul>
 
-      <Link href={`/train/${train.treinNummer}`}>
+      <Link href={`/journey/${train.treinNummer}`}>
         <a className="button is-small is-primary">Meer info</a>
       </Link>
     </div>
