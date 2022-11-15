@@ -32,11 +32,13 @@ export default function StationMarkers() {
     } else router.push("/trains", undefined, { shallow: true });
   }, [router, stationQuery, map]);
 
-  map?.on("zoomend", () => {
-    if (map.getZoom() > 11) {
-      setStations(() => true);
-    } else setStations(() => false);
-  });
+  useEffect(() => {
+    map?.on("zoomend", () => {
+      if (map.getZoom() > 11) {
+        setStations(true);
+      } else setStations(false);
+    });
+  }, [map]);
 
   return (
     <>
