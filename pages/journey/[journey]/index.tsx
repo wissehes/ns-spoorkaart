@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, GetStaticProps } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { ReactNode, useMemo } from "react";
@@ -317,7 +317,7 @@ function JourneyIsOld() {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const train = context.params?.train;
+  const journeyId = context.params?.journey;
 
   try {
     const {
@@ -325,7 +325,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     } = await NS.get<getJourneyDetailsResponse>(
       "/reisinformatie-api/api/v2/journey",
       {
-        params: { train },
+        params: { train: journeyId },
       }
     );
 
@@ -341,7 +341,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       props: {
         initialJourney: journey,
-        trainId: train,
+        trainId: journeyId,
         geojson: geojson.data.payload,
       },
     };
