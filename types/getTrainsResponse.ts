@@ -22,6 +22,7 @@ export interface Trein {
   horizontaleNauwkeurigheid: number;
   type: string;
   bron: string;
+  materieel?: number[];
 }
 
 export interface Meta {}
