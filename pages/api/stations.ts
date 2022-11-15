@@ -3,7 +3,7 @@ import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import getStations from "../../helpers/getStations";
-import Redis from "../../helpers/Redis";
+import Redis from "../../lib/Redis";
 import {
   SmallStation,
   SmallStations,
