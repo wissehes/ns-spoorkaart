@@ -67,11 +67,16 @@ export class DBClient {
           ritId: train.ritId,
           snelheid: train.snelheid,
           station: train.info?.station,
+          info:
+            train.info?.materieeldelen.find(
+              (m) => m.materieelnummer == materieel
+            ) || null,
           date,
         };
         data.trains[materieel] = trainData;
       }
     }
+    if (Object.keys(data.trains).length == 0) return;
 
     if (!(await this.client.exists(this.TRAINDATA))) {
       await this.client.json.set(this.TRAINDATA, "$", { data: [] });
@@ -127,4 +132,21 @@ type SavedTrain = {
   snelheid: number;
   station?: string;
   date: Date;
+  info?: {
+    materieelnummer: number;
+    type: string;
+    faciliteiten: string[];
+    afbeelding: string;
+    breedte: number;
+    hoogte: number;
+    bakken: {
+      afbeelding: { url: string };
+    }[];
+    zitplaatsen?: {
+      zitplaatsEersteKlas: number;
+      zitplaatsTweedeKlas: number;
+      klapstoelEersteKlas: number;
+      klapstoelTweedeKlas: number;
+    };
+  } | null;
 };
