@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
+import { SavedTrains, SavedTrain } from "../types/SavedTrain";
 
 export class DBClient {
   constructor() {
@@ -98,7 +99,7 @@ export class DBClient {
   public async getTrain(materieel: number) {
     const found =
       (await this.client.json.get(this.TRAINDATA, {
-        path: [`$.data.*.trains.${materieel}`],
+        path: `$.data.*.trains.${materieel}`,
       })) || [];
 
     return found as SavedTrain[];
@@ -116,37 +117,3 @@ export default DB;
 type GetTrainImagesRedis = { images: { base64: string; type: string }[] }[];
 
 type GetTrainData = { data: SavedTrains[] };
-
-type SavedTrains = {
-  trains: {
-    [key: string]: SavedTrain;
-  };
-  date: Date;
-};
-
-type SavedTrain = {
-  id: number; // Materieel id
-  ritId: string;
-  lat: number;
-  lng: number;
-  snelheid: number;
-  station?: string;
-  date: Date;
-  info?: {
-    materieelnummer: number;
-    type: string;
-    faciliteiten: string[];
-    afbeelding: string;
-    breedte: number;
-    hoogte: number;
-    bakken: {
-      afbeelding: { url: string };
-    }[];
-    zitplaatsen?: {
-      zitplaatsEersteKlas: number;
-      zitplaatsTweedeKlas: number;
-      klapstoelEersteKlas: number;
-      klapstoelTweedeKlas: number;
-    };
-  } | null;
-};
