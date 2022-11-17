@@ -146,10 +146,16 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
         </li>
         <li>{data?.notes.map((a) => a.text).join(", ")}</li>
       </ul>
-
-      <Link href={`/journey/${train.treinNummer}`}>
-        <a className="button is-small is-primary">Meer info</a>
-      </Link>
+      <div className="is-flex" style={{ gap: "1rem" }}>
+        {train.materieel && train.materieel[0] && (
+          <Link href={`/train/${train.materieel[0]}`}>
+            <a className="button is-small is-primary">Meer info</a>
+          </Link>
+        )}
+        <Link href={`/journey/${train.treinNummer}`}>
+          <a className="button is-small is-primary">Rit</a>
+        </Link>
+      </div>
     </div>
   );
 }
