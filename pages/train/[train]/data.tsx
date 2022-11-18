@@ -22,7 +22,6 @@ import { useEffect, useMemo, useState, createRef } from "react";
 import { MapRef } from "react-map-gl/dist/esm/mapbox/create-ref";
 
 export default function TrainDataPage({ data }: { data?: SavedTrain[] }) {
-  // console.log(data);
   return (
     <div>
       <main>
@@ -55,12 +54,10 @@ function TrainHistoryMap({ data }: { data: SavedTrain[] }) {
       },
     ],
   });
-  console.log(data);
   const parsed = useMemo(() => bbox(geojson), [geojson]);
   const map = createRef<MapRef>();
 
   useEffect(() => {
-    console.log("fitting");
     map.current?.fitBounds(
       [
         [parsed[0], parsed[1]],
