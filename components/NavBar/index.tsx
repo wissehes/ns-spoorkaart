@@ -75,6 +75,10 @@ export default function NavBar() {
                 ))}
             </div>
           </div>
+
+          <Link href="/planner">
+            <a className="navbar-item">Reisplanner</a>
+          </Link>
         </div>
 
         <div className="navbar-end">

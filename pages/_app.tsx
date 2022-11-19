@@ -6,6 +6,7 @@ import Router from "next/router";
 import ProgressBar from "@badrap/bar-of-progress";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
+import { trpc } from "../helpers/trpc";
 
 const progress = new ProgressBar({
   size: 5,
@@ -31,4 +32,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
+export default trpc.withTRPC(MyApp);
