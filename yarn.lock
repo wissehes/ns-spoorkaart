@@ -2316,6 +2316,11 @@
   dependencies:
     tslib "^2.4.0"
 
+"@tabler/icons@^1.112.0":
+  version "1.112.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.112.0.tgz#6119c6046085a06d4246b1ffab7f1c1435d736b5"
+  integrity sha512-M1FmEXqeOUG1iZOLue1aLKEl+E3HHU1JaXb/LmZuOjOWuhHHpfQnSv+mgSmupehophq5piwSPhqnytt1Uh6oLw==
+
 "@tanstack/match-sorter-utils@^8.1.1":
   version "8.5.14"
   resolved "https://registry.yarnpkg.com/@tanstack/match-sorter-utils/-/match-sorter-utils-8.5.14.tgz#12efcd536abe491d09521e0242bc4d51442f8a8a"
