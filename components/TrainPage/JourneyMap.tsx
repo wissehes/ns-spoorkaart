@@ -20,7 +20,7 @@ import { time } from "../../helpers/TrainPage";
 import useTrains from "../../hooks/useTrains";
 import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 
-export default function NewJourneyMap({
+export default function JourneyMap({
   geojson,
   stops,
   train,
