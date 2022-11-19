@@ -7,6 +7,7 @@ import ProgressBar from "@badrap/bar-of-progress";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { trpc } from "../helpers/trpc";
+import { MantineProvider } from "@mantine/core";
 
 const progress = new ProgressBar({
   size: 5,
@@ -25,10 +26,12 @@ function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on("routeChangeComplete", progress.finish);
 
   return (
-    <QueryClientProvider client={client}>
-      <Component {...pageProps} />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <MantineProvider withGlobalStyles withNormalizeCSS>
+      <QueryClientProvider client={client}>
+        <Component {...pageProps} />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </MantineProvider>
   );
 }
 
