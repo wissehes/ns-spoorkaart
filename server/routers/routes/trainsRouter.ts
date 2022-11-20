@@ -37,9 +37,7 @@ export const trainsRouter = router({
 
     await downloadAndSaveImage(treinenMetInfo);
     await DB.saveTrains(treinenMetInfo);
-    return {
-      trains: treinenMetInfo,
-    };
+    return treinenMetInfo;
   }),
 });
 
