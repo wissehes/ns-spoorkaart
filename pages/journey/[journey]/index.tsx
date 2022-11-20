@@ -115,7 +115,9 @@ export default function JourneyPage({
   trainId: string;
 }) {
   const { classes } = useStyles();
-  const trains = trpc.trains.getTrains.useQuery();
+  const trains = trpc.trains.getTrains.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
   const { data: journey } = trpc.journey.journey.useQuery(
     { id: trainId },
     { initialData: initialJourney }
