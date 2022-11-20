@@ -1,47 +1,111 @@
-import { GetServerSideProps, GetStaticProps } from "next";
-import dynamic from "next/dynamic";
+import {
+  Alert,
+  Badge,
+  Box,
+  Container,
+  createStyles,
+  Flex,
+  Group,
+  List,
+  SimpleGrid,
+  Tabs,
+  Text,
+  Timeline,
+  Title,
+} from "@mantine/core";
+import { IconAlertCircle } from "@tabler/icons";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { ReactNode, useMemo } from "react";
-// import { GeoJSONObject } from "leaflet";
-import NavBar from "../../../components/NavBar";
+import { useMemo } from "react";
+import Navbar from "../../../components/NavBar";
+import JourneyMap from "../../../components/TrainPage/JourneyMap";
+import RushIcon from "../../../components/TrainPage/RushIcon";
 import NS from "../../../helpers/NS";
 import { formatDelay, formatTime } from "../../../helpers/StationPage";
+import { trpc } from "../../../helpers/trpc";
+import {
+  getGeoJSONResponse,
+  NSGeoJSON,
+} from "../../../types/getGeoJSONResponse";
 import {
   getJourneyDetailsResponse,
   JourneyDetails,
   Stop,
 } from "../../../types/getJourneyDetailsResponse";
 
-import {
-  getGeoJSONResponse,
-  NSGeoJSON,
-} from "../../../types/getGeoJSONResponse";
-import JourneyMap from "../../../components/TrainPage/JourneyMap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
-import useTrains from "../../../hooks/useTrains";
-import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import RushIcon from "../../../components/TrainPage/RushIcon";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import SquareDisplay from "../../../components/SquareDisplay";
-import FacilityIcons from "../../../components/TrainPage/FacilityIcons";
+const useStyles = createStyles((theme) => ({
+  container: {
+    paddingBottom: "2rem",
+  },
+  main: { minHeight: "100vh" },
+  description: {
+    color:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[1]
+        : theme.colors.gray[6],
+  },
+  box: {
+    borderRadius: "10px",
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[6]
+        : theme.colors.gray[0],
+    padding: "1rem",
+    marginTop: "1rem",
+  },
 
-const getTrainData = (journey: JourneyDetails) => {
-  const stop = journey.stops.find((s) => s.departures[0]);
-  return stop;
-};
+  boxTitle: {
+    marginBottom: "1rem",
+  },
 
-const getCurrentStop = (journey: JourneyDetails, train?: TreinWithInfo) => {
-  const stopId = train?.info?.station; /*.replace("_0", "")*/
-  const foundStop = journey.stops.find((s) => s.id.replace("_0", "") == stopId);
-  if (foundStop) return foundStop;
+  trackIcon: {
+    textAlign: "center",
+    width: "50px",
 
-  return journey.stops.find((s) => s.departures[0]);
-};
+    // borderColor: theme.colors.cyan,
+  },
 
-export default function TrainInfoPage({
+  tabsList: {
+    maxWidth: 1082,
+    marginLeft: "auto",
+    marginRight: "auto",
+    borderBottom: 0,
+
+    [`@media (max-width: ${1080}px)`]: {
+      maxWidth: "100%",
+      paddingRight: 0,
+    },
+  },
+
+  tab: {
+    fontSize: 16,
+    fontWeight: 500,
+    height: 46,
+    paddingLeft: theme.spacing.lg,
+    paddingRight: theme.spacing.lg,
+    marginBottom: -1,
+    borderColor:
+      theme.colorScheme === "dark"
+        ? `${theme.colors.dark[8]} !important`
+        : undefined,
+    backgroundColor: "transparent",
+
+    [`@media (max-width: ${1080}px)`]: {
+      paddingLeft: theme.spacing.lg,
+      paddingRight: theme.spacing.lg,
+      fontSize: theme.fontSizes.sm,
+      height: 38,
+    },
+
+    "&[data-active]": {
+      backgroundColor:
+        theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
+      color: theme.colorScheme === "dark" ? theme.white : theme.black,
+    },
+  },
+}));
+
+export default function JourneyPage({
   initialJourney,
   geojson,
   trainId,
@@ -50,146 +114,197 @@ export default function TrainInfoPage({
   geojson: NSGeoJSON;
   trainId: string;
 }) {
-  const trains = useTrains();
-  const { data: journey } = useQuery(
-    ["journey", trainId],
-    async () => {
-      const { data } = await axios.get<JourneyDetails>(
-        `/api/trains/${trainId}`
-      );
-      return data;
-    },
-    { initialData: initialJourney /*refetchInterval: 5000*/ }
+  const { classes } = useStyles();
+  const trains = trpc.trains.getTrains.useQuery();
+  const { data: journey } = trpc.journey.journey.useQuery(
+    { id: trainId },
+    { initialData: initialJourney }
   );
 
-  const train = useMemo(
-    () => trains.data?.find((t) => t.ritId == journey.productNumbers[0]),
+  const thisTrain = useMemo(
+    () => trains.data?.find((t) => t.ritId == journey?.productNumbers[0]),
     [trains, journey]
   );
-
-  const currentStop = useMemo(
-    () => getCurrentStop(journey, train),
-    [journey, train]
+  const stops = useMemo(
+    () => journey?.stops.filter(({ status }) => status !== "PASSING") || [],
+    [journey]
   );
-
-  const stops = journey.stops.filter(({ status }) => status !== "PASSING");
-  const firstStop = getTrainData(journey);
-
+  const firstStop = journey?.stops.find((s) => s.departures[0]);
   const product = firstStop?.departures[0]?.product;
+
   const destination =
     firstStop?.departures[0]?.destination?.name ||
-    stops[stops.length - 1]?.stop?.name;
+    stops[stops?.length - 1]?.stop?.name;
+
+  const currentStopIndex = useMemo(() => {
+    const curStop = stops.find((s) => {
+      return s.id.replace("_0", "") == thisTrain?.info?.station;
+    });
+    if (!curStop) return null;
+
+    return stops.indexOf(curStop) - 1 || null;
+  }, [stops, thisTrain]);
+
+  const titleText = useMemo(
+    () => `${product?.longCategoryName || "Trein"} naar ${destination} - NS
+          Spoorkaart`,
+    [product, destination]
+  );
 
   return (
     <>
       <Head>
-        <title>
-          {product?.longCategoryName || "Trein"} naar {destination} - NS
-          Spoorkaart
-        </title>
+        <title>{titleText}</title>
       </Head>
+      <main className={classes.main}>
+        <Navbar />
+        <Container className={classes.container}>
+          <Title>
+            {product?.longCategoryName || "Trein"} naar {destination}
+          </Title>
 
-      <NavBar />
-
-      <section className="hero is-info" style={{ marginBottom: "2rem" }}>
-        <div className="hero-body">
-          <p className="title">
-            {product?.operatorName} {product?.longCategoryName} naar{" "}
-            {destination}
-          </p>
-          <div className="hero-foot">
-            <div
-              className="is-flex"
-              style={{ gap: "1rem", overflow: "auto", width: "100%" }}
+          <Group
+            sx={() => ({
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            })}
+          >
+            <Badge variant="filled">
+              Rit {product?.number || journey?.productNumbers[0] || "?"}
+            </Badge>
+            <Badge
+              variant="gradient"
+              gradient={{ from: "#ed6ea0", to: "#ec8c69", deg: 35 }}
             >
-              <p>Rit {product?.number || journey.productNumbers[0] || "?"}</p>
-              <p>|</p>
-              <p>Drukte: {firstStop?.departures[0]?.crowdForecast}</p>
-              <p>|</p>
-              <p>Zitplaatsen: {firstStop?.actualStock?.numberOfSeats}</p>
-              <p>|</p>
-              <p>
-                Faciliteiten:{" "}
-                {firstStop?.plannedStock?.trainParts
-                  .map((p) => p.facilities.join(", "))
-                  .join(", ")}
-              </p>
-            </div>
+              Type {firstStop?.actualStock?.trainType || "?"}
+            </Badge>
+            <Badge>
+              Zitplaatsen: {firstStop?.actualStock?.numberOfSeats || "?"}
+            </Badge>
+            {firstStop?.actualStock?.trainParts.map((p) => (
+              <Badge
+                key={p.stockIdentifier}
+                variant="gradient"
+                gradient={{ from: "teal", to: "lime", deg: 105 }}
+              >
+                Treinstel {p.stockIdentifier}
+              </Badge>
+            ))}
+            {firstStop?.actualStock?.trainParts.map((p) =>
+              p.facilities.map((f) => (
+                <Badge
+                  key={f}
+                  variant="gradient"
+                  gradient={{ from: "teal", to: "blue", deg: 60 }}
+                >
+                  {f}
+                </Badge>
+              ))
+            )}
+          </Group>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                overflow: "auto",
-              }}
-            >
-              {journey.stops[0]?.actualStock?.trainParts
-                .filter((p) => p.image)
-                .map((p) => (
-                  <div
-                    className="is-flex"
-                    style={{ height: "4rem" }}
-                    key={p.stockIdentifier}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.image?.uri || ""}
-                      alt={p.stockIdentifier}
-                      style={{
-                        height: "auto",
-                        width: "auto",
-                        maxHeight: "4rem",
-                        maxWidth: "fit-content",
-                      }}
-                    />
-                  </div>
-                ))}
-            </div>
-            <div style={{ marginTop: "1rem" }}>
-              {journey.notes.map((n) => (
-                <p key={n.text}>{n.text}</p>
-              ))}
-            </div>
-            <div className="is-flex">
-              {currentStop && (
-                <SquareDisplay title="Drukte">
-                  <RushIcon
-                    stop={currentStop}
-                    color={false}
-                    style={{ textAlign: "center" }}
+          <Flex
+            style={{
+              flexDirection: "row",
+              overflow: "auto",
+            }}
+          >
+            {journey?.stops[0]?.actualStock?.trainParts
+              .filter((p) => p.image)
+              .map((p) => (
+                <Flex
+                  style={{ height: "6rem", flexDirection: "column" }}
+                  key={p.stockIdentifier}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.image?.uri || ""}
+                    alt={p.stockIdentifier}
+                    style={{
+                      height: "auto",
+                      width: "auto",
+                      maxHeight: "4rem",
+                      maxWidth: "fit-content",
+                    }}
                   />
-                </SquareDisplay>
-              )}
-              {currentStop?.plannedStock?.trainParts[0]?.facilities && (
-                <FacilityIcons
-                  facilities={
-                    currentStop?.plannedStock?.trainParts[0]?.facilities
-                  }
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-      <div className="container">
-        {!trains.isLoading && !train && <JourneyIsOld />}
+                  <Badge
+                    style={{
+                      marginBottom: "1rem",
+                      marginLeft: "1rem",
+                      marginRight: "1rem",
+                    }}
+                  >
+                    Treinstel {p.stockIdentifier}
+                  </Badge>
+                </Flex>
+              ))}
+          </Flex>
 
-        <div className="box">
-          <h1 className="is-size-3">Route</h1>
-          <div style={{ width: "100%", zIndex: 1 }}>
-            <JourneyMap geojson={geojson} stops={stops} train={train} />
-          </div>
-        </div>
+          {!trains.isLoading && !thisTrain && <JourneyNotOnMap />}
 
-        <div className="box" style={{ overflowX: "auto" }}>
-          <h1 className="is-size-3">Reis</h1>
-
-          <StopTable stops={stops} train={train} />
-        </div>
-      </div>
-
-      <div style={{ padding: "2rem" }} />
+          <Tabs defaultValue="kaart">
+            <Tabs.List grow>
+              <Tabs.Tab value="kaart">Kaart</Tabs.Tab>
+              <Tabs.Tab value="route">Route</Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="kaart" pt="xs">
+              <JourneyMap geojson={geojson} stops={stops} train={thisTrain} />
+            </Tabs.Panel>
+            <Tabs.Panel value="route" pt="xs">
+              <Timeline active={currentStopIndex || 0}>
+                {stops.map((s, i) => (
+                  <Timeline.Item
+                    key={s.stop.uicCode}
+                    title={s.stop.name}
+                    lineVariant={currentStopIndex == i ? "dotted" : "solid"}
+                  >
+                    <SimpleGrid cols={3}>
+                      <Box>
+                        <Text color="dimmed">
+                          A: {time(s, "arr")} {delayTime(s, "arr")}
+                        </Text>
+                        <Text color="dimmed">
+                          V: {time(s, "dest")} {delayTime(s, "dep")}
+                        </Text>
+                      </Box>
+                      <Box className={classes.trackIcon}>
+                        <Text>Spoor</Text>
+                        <Text weight="bold">
+                          {s.arrivals[0]?.actualTrack ||
+                            s.departures[0]?.actualTrack ||
+                            "?"}
+                        </Text>
+                      </Box>
+                      <RushIcon stop={s} size={1.5} />
+                    </SimpleGrid>
+                  </Timeline.Item>
+                ))}
+              </Timeline>
+            </Tabs.Panel>
+          </Tabs>
+        </Container>
+      </main>
     </>
+  );
+}
+
+function JourneyNotOnMap() {
+  return (
+    <Alert
+      icon={<IconAlertCircle size={16} />}
+      color="yellow"
+      title="Deze reis is niet (meer) live."
+    >
+      <Text>Dit kan een van meerdere redenen hebben:</Text>
+      <List type="ordered">
+        <List.Item>De reis is afgelopen of nog niet begonnen.</List.Item>
+        <List.Item>
+          De reis is niet live te volgen (bij sommige arriva treinen of
+          buitenlandse vervoerders)
+        </List.Item>
+        <List.Item>De trein staat stil bij een station</List.Item>
+      </List>
+    </Alert>
   );
 }
 
@@ -213,108 +328,15 @@ const delayTime = (stop: Stop, type: "dep" | "arr") => {
       : stop.arrivals[0]?.delayInSeconds || 0;
 
   if (delay > 30) {
-    return <span className="has-text-danger">+{formatDelay(delay)}</span>;
+    return (
+      <Text c="red" size={"md"} span>
+        +{formatDelay(delay)}
+      </Text>
+    );
   } else {
     return <></>;
   }
 };
-
-function StopTable({ stops, train }: { stops: Stop[]; train?: TreinWithInfo }) {
-  return (
-    <table className="table" style={{ width: "100%" }}>
-      <thead>
-        <tr>
-          <th></th>
-          <th>Aankomst</th>
-          <th>Vertrek</th>
-          <th>Station</th>
-          <th style={{ textAlign: "center" }}>Spoor</th>
-          <th style={{ textAlign: "center" }}>Drukte</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {stops.map((s) => (
-          <tr
-            key={s.id}
-            className={
-              s.id.replace("_0", "") == train?.info?.station
-                ? "is-selected"
-                : ""
-            }
-          >
-            <td>
-              {checkIfDateHasPassed(
-                s.arrivals[0]?.actualTime ||
-                  s.departures[0]?.actualTime ||
-                  s.arrivals[0]?.plannedTime ||
-                  s.departures[0]?.plannedTime
-              ) ? (
-                <FontAwesomeIcon type="regular" icon={faCircleCheck} />
-              ) : (
-                <FontAwesomeIcon type="regular" icon={faCircle} />
-              )}
-            </td>
-            <td>
-              {time(s, "arr")} {delayTime(s, "arr")}
-            </td>
-            <td>
-              {time(s, "dest")} {delayTime(s, "dep")}
-            </td>
-            <td>{s.stop.name}</td>
-            <td style={{ textAlign: "center" }}>
-              {s.arrivals[0]?.actualTrack || "?"}
-            </td>
-            <td style={{ textAlign: "center" }}>
-              <RushIcon stop={s} />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-const checkIfDateHasPassed = (date?: string) => {
-  if (!date) return true;
-
-  const parsed = new Date(date);
-  const now = new Date();
-
-  return parsed.getTime() < now.getTime();
-};
-
-function JourneyIsOld() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-      <article
-        className="message is-warning"
-        style={{ width: "80%", margin: "1rem" }}
-      >
-        <div className="message-header">
-          <p>Deze reis is niet (meer) live.</p>
-          {/* <button className="delete" aria-label="delete"></button> */}
-        </div>
-        <div className="message-body">
-          Dit kan een van meerdere redenen hebben:
-          <ol style={{ marginLeft: "2rem" }} type="A">
-            <li>De reis is afgelopen of nog niet begonnen.</li>
-            <li>
-              De reis is niet live te volgen (bij sommige arriva treinen of
-              buitenlandse vervoerders)
-            </li>
-            <li>De trein staat stil bij een station</li>
-          </ol>
-        </div>
-      </article>
-    </div>
-  );
-}
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const journeyId = context.params?.journey;
