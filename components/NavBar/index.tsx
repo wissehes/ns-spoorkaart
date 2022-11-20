@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Burger,
   Container,
   createStyles,
@@ -6,9 +7,11 @@ import {
   Header,
   Menu,
   Title,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { NextLink } from "@mantine/next";
+import { IconMoonStars, IconSun } from "@tabler/icons";
 
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -99,6 +102,7 @@ export default function Navbar() {
 
         <Group spacing={5} className={classes.links}>
           {items}
+          <ToggleDarkmode />
         </Group>
 
         <Burger
@@ -175,12 +179,28 @@ function StationsMenu() {
           <Menu.Item
             key={s.code}
             component={NextLink}
-            href={`/station/${s.code}`}
+            href={`/stations/${s.code}`}
           >
             {s.namen.lang}
           </Menu.Item>
         ))}
       </Menu.Dropdown>
     </Menu>
+  );
+}
+
+function ToggleDarkmode() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const dark = colorScheme === "dark";
+
+  return (
+    <ActionIcon
+      variant="outline"
+      color={dark ? "yellow" : "blue"}
+      onClick={() => toggleColorScheme()}
+      title="Toggle color scheme"
+    >
+      {dark ? <IconSun size={18} /> : <IconMoonStars size={18} />}
+    </ActionIcon>
   );
 }
