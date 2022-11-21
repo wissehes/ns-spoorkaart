@@ -1,104 +1,88 @@
-import { DepartureWithJourney } from "../../pages/stations/[code]/departures";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/nl";
+import { Box, Flex, Grid, Group, Paper, Text, Title } from "@mantine/core";
+import formatTime from "../../helpers/formatTime";
+import {
+  departureStatus,
+  formatDelay,
+  timeUntil,
+} from "../../helpers/StationPage";
+import { DepartureWithJourney } from "../../types/DepartureWithJourney";
 import SpoorIcon from "./SpoorIcon";
-import Link from "next/link";
-dayjs.extend(relativeTime);
 
-function formatTime(date: string) {
-  return new Date(date).toLocaleTimeString("nl-NL", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-const formatDelay = (delay: number) => {
-  const d = delay / 60;
-  return Math.round(d);
-};
-
-function timeUntil(date: string) {
-  const day = dayjs();
-  return day.locale("nl").to(date);
-}
-
-export default function DepartureCard({
-  departure: d,
-}: {
-  departure: DepartureWithJourney;
-}) {
+export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
   const delay = d.stop?.departures[0]?.delayInSeconds || 0;
   const product = d.departure.product;
-
   return (
-    <div className="box">
-      <div className="is-flex is-justify-content-space-between is-align-content-center">
-        <div className="is-flex">
-          <div style={{ marginRight: "1rem" }}>
-            <p className="is-size-3 is-align-content-center">
-              {formatTime(d.departure.plannedDateTime)}
-            </p>
-            {delay > 30 && (
-              <p className="has-text-danger">+{formatDelay(delay || 0)}</p>
-            )}
-            <p className="has-text-grey">
-              {timeUntil(d.departure.actualDateTime)}
-            </p>
-          </div>
-          <div>
-            <Link href={`/journey/${d.departure.product.number}`}>
-              <a className="is-size-4">
-                {d.departure.product.longCategoryName} naar{" "}
-                <b>{d.departure.direction}</b>
-              </a>
-            </Link>
-            <h1>Van {d.stop?.departures[0]?.origin.name}</h1>
+    <Paper shadow="lg" p="md" radius="md" withBorder>
+      <Grid grow>
+        <Grid.Col span={2}>
+          <Box>
+            <Flex gap="0.5rem">
+              <Title order={2}>{formatTime(d.departure.plannedDateTime)}</Title>
+              {delay > 30 && <Text c="red">+{formatDelay(delay || 0)}</Text>}
+            </Flex>
+            <Text c="gray">{timeUntil(d.departure.actualDateTime)}</Text>
+          </Box>
+        </Grid.Col>
+
+        <Grid.Col span={8}>
+          <Box>
+            <Title order={3} weight="normal">
+              {d.departure.product.longCategoryName} naar{" "}
+              <b>{d.departure.direction}</b>
+            </Title>
+            <Text fz={"lg"}>Van {d.stop?.departures[0]?.origin.name}</Text>
             {d.departure.routeStations.length > 0 && (
-              <h3>
+              <Text fz="md">
                 Via{" "}
                 <b>
                   {d.departure.routeStations
                     .map((r) => r.mediumName)
                     .join(", ")}
                 </b>
-              </h3>
+              </Text>
             )}
-          </div>
-        </div>
-        <div>
-          <SpoorIcon spoorNr={d.departure.plannedTrack} />
-          <p>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</p>
-          <p>
-            {product.operatorName} {product.longCategoryName} {product.number}
-          </p>
-        </div>
-      </div>
-      <div className="is-flex" style={{ overflow: "scroll", height: "2.5rem" }}>
-        {d.stop?.actualStock?.trainParts
-          .filter((p) => p.image)
-          .map((p, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={p.image?.uri || ""}
-              alt={p.stockIdentifier}
-              key={p.stockIdentifier + i.toString()}
-              //   layout="fill"
-            />
-          ))}
-      </div>
-      <div>
-        <p>{departureStatus(d.departure.departureStatus)}</p>
-      </div>
-    </div>
-  );
-}
+          </Box>
+        </Grid.Col>
 
-function departureStatus(status: string) {
-  switch (status) {
-    case "ON_STATION":
-      return "Aan perron";
-    case "INCOMING":
-      return "Nog niet op station";
-  }
+        <Grid.Col span={"auto"}>
+          <Box>
+            <SpoorIcon spoorNr={d.departure.plannedTrack} />
+          </Box>
+        </Grid.Col>
+      </Grid>
+
+      {(d.stop?.actualStock?.trainParts.filter((p) => p.image)?.length || 0) >
+        0 && (
+        <Flex style={{ overflow: "scroll", height: "3.5rem" }}>
+          {d.stop?.actualStock?.trainParts
+            .filter((p) => p.image)
+            .map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.image?.uri || ""}
+                alt={p.stockIdentifier}
+                key={p.stockIdentifier + i.toString()}
+                style={{
+                  height: "auto",
+                  width: "auto",
+                  maxHeight: "3rem",
+                  maxWidth: "fit-content",
+                }}
+              />
+            ))}
+        </Flex>
+      )}
+      <Group>
+        <Text weight="bolder">
+          {departureStatus(d.departure.departureStatus)}
+        </Text>
+
+        <Text>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</Text>
+
+        <Text>
+          {product.operatorName} {product.longCategoryName} {product.number}
+        </Text>
+      </Group>
+    </Paper>
+  );
 }
