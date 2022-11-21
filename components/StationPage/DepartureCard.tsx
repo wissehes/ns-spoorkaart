@@ -11,6 +11,8 @@ import SpoorIcon from "./SpoorIcon";
 export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
   const delay = d.stop?.departures[0]?.delayInSeconds || 0;
   const product = d.departure.product;
+  const notes = d.journey?.notes.map((d) => d.text);
+
   return (
     <Paper shadow="lg" p="md" radius="md" withBorder>
       <Grid grow>
@@ -83,10 +85,10 @@ export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
           {product.operatorName} {product.longCategoryName} {product.number}
         </Text>
       </Group>
-      {d.journey?.notes.length && (
+      {notes && (
         <Group>
-          {d.journey.notes.map((n) => (
-            <Text key={n.text}>{n.text}</Text>
+          {notes?.map((n) => (
+            <Text key={n}>{n}</Text>
           ))}
         </Group>
       )}
