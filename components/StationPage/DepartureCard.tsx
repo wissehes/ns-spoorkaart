@@ -83,6 +83,13 @@ export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
           {product.operatorName} {product.longCategoryName} {product.number}
         </Text>
       </Group>
+      {d.journey?.notes.length && (
+        <Group>
+          {d.journey.notes.map((n) => (
+            <Text key={n.text}>{n.text}</Text>
+          ))}
+        </Group>
+      )}
     </Paper>
   );
 }
