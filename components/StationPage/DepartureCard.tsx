@@ -1,4 +1,16 @@
-import { Box, Flex, Grid, Group, Paper, Text, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Flex,
+  Grid,
+  Group,
+  Paper,
+  Text,
+  Title,
+} from "@mantine/core";
+import { NextLink } from "@mantine/next";
+import { IconInfoCircle } from "@tabler/icons";
 import formatTime from "../../helpers/formatTime";
 import {
   departureStatus,
@@ -18,9 +30,16 @@ export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
       <Grid grow>
         <Grid.Col span={2}>
           <Box>
-            <Flex gap="0.5rem">
+            <Flex gap="0.25rem" align="center">
               <Title order={2}>{formatTime(d.departure.plannedDateTime)}</Title>
               {delay > 30 && <Text c="red">+{formatDelay(delay || 0)}</Text>}
+
+              <ActionIcon
+                component={NextLink}
+                href={`/journey/${product.number}`}
+              >
+                <IconInfoCircle size={15} />
+              </ActionIcon>
             </Flex>
             <Text c="gray">{timeUntil(d.departure.actualDateTime)}</Text>
           </Box>
@@ -79,11 +98,13 @@ export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
           {departureStatus(d.departure.departureStatus)}
         </Text>
 
-        <Text>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</Text>
+        <Badge>{d.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</Badge>
 
-        <Text>
+        <Badge color="cyan">
           {product.operatorName} {product.longCategoryName} {product.number}
-        </Text>
+        </Badge>
+
+        <Badge color="teal">{d.stop?.actualStock?.trainType}</Badge>
       </Group>
       {notes && (
         <Group>
