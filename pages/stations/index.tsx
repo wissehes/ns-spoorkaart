@@ -1,34 +1,60 @@
 import {
-  faInfoCircle,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+  ActionIcon,
+  Badge,
+  Box,
+  Center,
+  Container,
+  Group,
+  Loader,
+  Select,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { NextLink } from "@mantine/next";
+import { IconInfoCircle, IconSearch } from "@tabler/icons";
+
 import Head from "next/head";
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import NavBar from "../../components/NavBar";
+
+import Navbar from "../../components/NavBar";
 import {
   countries,
   formatCountry,
   formatStationType,
   stationTypes,
 } from "../../helpers/StationPage";
-import useStations from "../../hooks/useStations";
+import { trpc } from "../../helpers/trpc";
+import { useStyles } from "../../styles/important";
 import { SmallStation } from "../../types/getStationsResponse";
 
-export default function StationsPage() {
-  const [searchValue, setSearchValue] = useState("");
-  const [selectedCountry, setCountry] = useState("NL");
-  const [selectedType, setType] = useState("");
-  const stations = useStations();
+type SelectData = { value: string; label: string }[];
 
-  const searched = useMemo(() => {
+export default function StationsPage() {
+  const { classes } = useStyles();
+
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedCountry, setCountry] = useState<string | null>("NL");
+  const [selectedType, setType] = useState<string | null>();
+
+  const mappedCountries: SelectData = Object.entries(countries).map(
+    ([id, c]) => ({ value: id, label: `${c.emoji} ${c.name}` })
+  );
+  const mappedTypes: SelectData = Object.entries(stationTypes).map(
+    ([id, s]) => ({ value: id, label: s })
+  );
+
+  const stations = trpc.station.all.useQuery();
+
+  const filtered = useMemo(() => {
     let filtered: SmallStation[] = stations.data || [];
 
-    if (selectedCountry.length) {
+    if (selectedCountry) {
       filtered = filtered.filter(({ land }) => land == selectedCountry);
     }
-    if (selectedType.length) {
+
+    if (selectedType) {
       filtered = filtered.filter(
         ({ stationType }) => stationType == selectedType
       );
@@ -43,77 +69,56 @@ export default function StationsPage() {
     } else {
       return filtered;
     }
-  }, [searchValue, selectedCountry, selectedType, stations]);
-
+  }, [stations, selectedCountry, selectedType, searchValue]);
   return (
-    <div>
+    <>
       <Head>
         <title>Stations | NS Spoorkaart</title>
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main style={{ minHeight: "100vh" }}>
-        <NavBar />
+      <main className={classes.main}>
+        <Navbar />
+        <Container>
+          <Box className={classes.header}>
+            <Title>Stations</Title>
+            <Text>Alle stations op een rijtje</Text>
+          </Box>
 
-        <section className="hero is-info" style={{ marginBottom: "2rem" }}>
-          <div className="hero-body">
-            <p className="title">Stations</p>
-            <p className="subtitle">Alle stations op een rijtje.</p>
-          </div>
-        </section>
+          <Group>
+            <TextInput
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              label="Zoeken"
+              placeholder="Zoeken..."
+              icon={<IconSearch size={14} />}
+            />
 
-        <div className="container">
-          <div className="box">
-            <div className="is-flex" style={{ gap: "1rem" }}>
-              <div className="field">
-                <p className="control has-icons-left has-icons-right">
-                  <input
-                    className="input"
-                    type="search"
-                    placeholder="Zoek..."
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                  />
-                  <span className="icon is-small is-left">
-                    <FontAwesomeIcon icon={faMagnifyingGlass} />
-                  </span>
-                </p>
-              </div>
+            <Select
+              value={selectedCountry}
+              onChange={setCountry}
+              data={mappedCountries}
+              clearable
+              label="Land"
+              placeholder="Kies land..."
+            />
+            <Select
+              value={selectedType}
+              onChange={setType}
+              data={mappedTypes}
+              clearable
+              label="Soort"
+              placeholder="Kies soort..."
+            />
+          </Group>
 
-              <div className="select">
-                <select
-                  onChange={(e) => setCountry(e.target.value)}
-                  value={selectedCountry}
-                >
-                  <option defaultChecked value="">
-                    Alle landen
-                  </option>
-                  {Object.entries(countries).map(([id, c]) => (
-                    <option key={id} value={id}>
-                      {c.emoji} {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {stations.isLoading && (
+            <Center style={{ marginTop: "5rem" }}>
+              <Loader />
+            </Center>
+          )}
 
-              <div className="select">
-                <select
-                  onChange={(e) => setType(e.target.value)}
-                  value={selectedType}
-                >
-                  <option defaultChecked value="">
-                    Alle types
-                  </option>
-                  {Object.entries(stationTypes).map(([id, c]) => (
-                    <option key={id} value={id}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <table className="table is-hoverable is-fullwidth">
+          {stations.data && (
+            <Table>
               <thead>
                 <tr>
                   <th>Naam</th>
@@ -124,14 +129,14 @@ export default function StationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {searched?.map((s) => (
+                {filtered.map((s) => (
                   <tr key={s.code}>
                     <td>
                       <b>{s.namen.lang}</b>
                     </td>
                     <td>{formatStationType(s.stationType)}</td>
                     <td>
-                      <span className="tag"> {s.code}</span>
+                      <Badge>{s.code}</Badge>
                     </td>
                     <td
                       style={{ textAlign: "center" }}
@@ -139,41 +144,23 @@ export default function StationsPage() {
                     >
                       {formatCountry(s.land).emoji}
                     </td>
-                    <td
-                      style={{ textAlign: "center" }}
-                      title={`Info over ${s.namen.kort}`}
-                    >
-                      <Link href={`/stations/${s.code}`}>
-                        <a>
-                          <FontAwesomeIcon icon={faInfoCircle} />
-                        </a>
-                      </Link>
+                    <td title={`Info over ${s.namen.kort}`}>
+                      <Center>
+                        <ActionIcon
+                          component={NextLink}
+                          href={`/stations/${s.code}`}
+                        >
+                          <IconInfoCircle />
+                        </ActionIcon>
+                      </Center>
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-
-            {stations.isLoading && (
-              <progress className="progress is-large is-info" max="100">
-                50%
-              </progress>
-            )}
-          </div>
-        </div>
-
-        <div style={{ padding: "2.5rem" }} />
+            </Table>
+          )}
+        </Container>
       </main>
-    </div>
+    </>
   );
 }
-
-// export const getServerSideProps: GetServerSideProps = async () => {
-//   const stations = await getStations();
-
-//   return {
-//     props: {
-//       stations: stations.payload,
-//     },
-//   };
-// };
