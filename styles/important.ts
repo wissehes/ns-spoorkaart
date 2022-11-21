@@ -11,6 +11,9 @@ export const useStyles = createStyles((theme) => ({
         ? theme.colors.dark[1]
         : theme.colors.gray[6],
   },
+  header: {
+    marginBottom: "2rem",
+  },
   box: {
     borderRadius: "10px",
     backgroundColor:
