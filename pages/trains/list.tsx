@@ -78,7 +78,7 @@ export default function ListTrainsPage() {
             style={{ flex: 1, maxWidth: "25rem" }}
             onChange={(event) => setSearch(event.currentTarget.value)}
             size="md"
-            icon={<IconSearch size={5} />}
+            icon={<IconSearch size={16} />}
           />
 
           {trains.data && (
@@ -118,7 +118,7 @@ export default function ListTrainsPage() {
                           component={NextLink}
                           href={`/journey/${t.treinNummer}`}
                         >
-                          <IconInfoCircle size={15} />
+                          <IconInfoCircle size={20} />
                         </ActionIcon>
                       </td>
                     </tr>

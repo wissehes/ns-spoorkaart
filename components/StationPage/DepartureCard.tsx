@@ -38,7 +38,7 @@ export default function DepartureCard({ d }: { d: DepartureWithJourney }) {
                 component={NextLink}
                 href={`/journey/${product.number}`}
               >
-                <IconInfoCircle size={15} />
+                <IconInfoCircle size={20} />
               </ActionIcon>
             </Flex>
             <Text c="gray">{timeUntil(d.departure.actualDateTime)}</Text>

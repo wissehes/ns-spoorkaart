@@ -39,7 +39,7 @@ export default function ArrivalCard({ a }: { a: ArrivalWithJourney }) {
                 component={NextLink}
                 href={`/journey/${product.number}`}
               >
-                <IconInfoCircle size={15} />
+                <IconInfoCircle size={20} />
               </ActionIcon>
             </Flex>
             <Text c="gray">{timeUntil(a.arrival.actualDateTime)}</Text>
