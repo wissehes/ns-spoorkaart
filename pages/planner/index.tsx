@@ -1,39 +1,68 @@
 import {
-  faArrowCircleRight,
-  faArrowRight,
-  faArrowsTurnToDots,
-  faCheck,
-  faClock,
-  faMagnifyingGlass,
-  faTrain,
-  IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+  Anchor,
+  Badge,
+  Box,
+  Breadcrumbs,
+  Button,
+  Center,
+  Container,
+  Flex,
+  Grid,
+  Group,
+  Modal,
+  Paper,
+  Select,
+  Text,
+  TextInput,
+  Timeline,
+  Title,
+} from "@mantine/core";
+import { NextLink } from "@mantine/next";
+import {
+  IconArrowBigRightLine,
+  IconArrowBounce,
+  IconArrowRight,
+  IconClock,
+  IconExternalLink,
+  IconInfoCircle,
+  IconSearch,
+  IconShare,
+} from "@tabler/icons";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import {
   Dispatch,
-  HTMLInputTypeAttribute,
   SetStateAction,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
-import NavBar from "../../components/NavBar";
-import Hero, { HeroSubtitle, HeroTitle } from "../../components/Bulma/Hero";
-import formatTime from "../../helpers/formatTime";
-import { trpc } from "../../helpers/trpc";
-import { SmallStation, Station } from "../../types/getStationsResponse";
-import { Trip } from "../../types/NS/journey/getTripPlannerResponse";
-import { formatDuration } from "../../helpers/PlannerPage";
+import Navbar from "../../components/NavBar";
 import RushIcon from "../../components/TrainPage/RushIcon";
-import Link from "next/link";
+import formatTime from "../../helpers/formatTime";
+import { formatDuration } from "../../helpers/PlannerPage";
+import { trpc } from "../../helpers/trpc";
+import { useStyles } from "../../styles/important";
+import { Trip } from "../../types/NS/journey/getTripPlannerResponse";
 
 export default function PlannerPage() {
-  const [from, setFrom] = useState<SmallStation | null>();
-  const [to, setTo] = useState<SmallStation | null>();
+  const { classes } = useStyles();
 
-  const [modalTrip, setModalTrip] = useState<Trip | null>();
+  const stations = trpc.station.all.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+
+  const [fromCode, setFromCode] = useState<string | null>(null);
+  const [toCode, setToCode] = useState<string | null>(null);
+
+  const from = useMemo(
+    () => stations.data?.find((a) => a.code == fromCode),
+    [stations, fromCode]
+  );
+  const to = useMemo(
+    () => stations.data?.find((a) => a.code == toCode),
+    [stations, toCode]
+  );
 
   const data = trpc.journey.plan.useQuery(
     {
@@ -42,111 +71,61 @@ export default function PlannerPage() {
     },
     { enabled: false }
   );
-
   return (
-    <div style={{ minHeight: "100vh", paddingBottom: "3rem" }}>
+    <>
       <Head>
         <title>Reisplanner | NS Spoorkaart</title>
       </Head>
+      <main className={classes.main}>
+        <Navbar />
 
-      <main>
-        <NavBar />
-        <Hero size="small" color="info">
-          <HeroTitle>Reisplanner</HeroTitle>
-          {/* <HeroSubtitle></HeroSubtitle> */}
+        <Container className={classes.container}>
+          <Title>Reisplanner</Title>
+          <Group grow style={{ marginBottom: "1rem" }}>
+            <StationSelect value={fromCode} set={setFromCode} type="from" />
 
-          <div
-            className="is-flex container"
-            style={{ justifyContent: "space-around" }}
-          >
-            <BulmaTextInput
-              type="search"
-              placeholder="Van station"
-              id="fromstation"
-              icon={faTrain}
-              value={from}
-              setValue={setFrom}
-            />
+            <IconArrowRight size={30} />
 
-            <div
-              className="is-flex"
-              style={{ justifyContent: "center", alignItems: "center" }}
-            >
-              <FontAwesomeIcon icon={faArrowCircleRight} size="2x" />
-            </div>
+            <StationSelect value={toCode} set={setToCode} type="to" />
 
-            <BulmaTextInput
-              type="search"
-              id="tostation"
-              placeholder="Naar station"
-              icon={faTrain}
-              value={to}
-              setValue={setTo}
-            />
-
-            <button
-              className={`button is-primary ${
-                data.isFetching ? "is-loading" : ""
-              }`}
-              onClick={() => data.refetch()}
+            <Button
+              leftIcon={<IconSearch />}
               disabled={!to || !from}
+              loading={data.isFetching}
+              onClick={() => data.refetch()}
             >
-              <span className="icon is-small">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </span>
-              <span>Plannen</span>
-            </button>
-          </div>
-        </Hero>
+              Plan
+            </Button>
+          </Group>
 
-        <div className="container" style={{ marginTop: "1rem" }}>
-          {(!data.isSuccess || data.isFetching) && (
-            <div className="box">
-              <p>Begin met zoeken! {":)"}</p>
-            </div>
-          )}
-          <div
-            className="is-flex"
-            style={{ gap: "3rem", flexDirection: "column" }}
-          >
+          <Box>
+            <Title order={3}>Of ritnummer van NS opzoeken</Title>
+            <LookupNumber />
+          </Box>
+
+          <Flex direction="column" gap="md" style={{ marginTop: "1rem" }}>
             {data.data?.trips.map((trip) => (
-              <div key={trip.idx}>
-                <TripBox trip={trip} setModal={setModalTrip} />
-              </div>
+              <TripPaper key={trip.idx} trip={trip} />
             ))}
-          </div>
-        </div>
+          </Flex>
+        </Container>
       </main>
-      {modalTrip && (
-        <div className="modal is-active" onClick={() => setModalTrip(null)}>
-          <div className="modal-background"></div>
-
-          <div className="modal-content">
-            <div className="box">
-              <p>Modal JS example</p>
-            </div>
-          </div>
-
-          <button
-            className="modal-close is-large"
-            aria-label="close"
-            onClick={() => setModalTrip(null)}
-          ></button>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
-function TripBox({
-  trip,
-  setModal,
-}: {
-  trip: Trip;
-  setModal: Dispatch<SetStateAction<Trip | null | undefined>>;
-}) {
+function TripPaper({ trip }: { trip: Trip }) {
+  const [modalOpened, setModelOpened] = useState(false);
+
   const legs = useMemo(() => trip.legs, [trip]);
+  const firstLeg = useMemo(() => legs[0], [legs]);
   const lastLeg = useMemo(() => legs[legs.length - 1], [legs]);
+
+  const firstStopName = useMemo(() => firstLeg.stops[0].name, [firstLeg]);
+  const lastStopName = useMemo(
+    () => lastLeg.stops[lastLeg.stops.length - 1].name,
+    [lastLeg]
+  );
 
   const startTime = useMemo(
     () => legs[0]?.stops[0]?.plannedDepartureDateTime,
@@ -157,144 +136,165 @@ function TripBox({
     [lastLeg]
   );
 
-  return (
-    <div
-      key={trip.idx}
-      className="box"
-      style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}
-    >
-      <div
-        className="is-flex"
-        style={{
-          justifyContent: "space-between",
-          marginBottom: "1rem",
-          height: "2rem",
-        }}
-      >
-        <div
-          className="is-flex"
-          style={{ gap: "0.5rem", alignItems: "center" }}
-        >
-          <p className="is-size-5">{formatTime(startTime)}</p>
-          <FontAwesomeIcon icon={faArrowRight} />
-          <p className="is-size-5">{formatTime(endTime)}</p>
-        </div>
+  const canShare = !!navigator.share;
 
-        <div className="is-flex" style={{ gap: "1rem" }}>
-          <div
-            className="is-flex"
-            style={{ gap: "0.5rem", alignItems: "center" }}
-          >
-            <FontAwesomeIcon icon={faArrowsTurnToDots} />
-            {trip.transfers}x
-          </div>
-          <div
-            className="is-flex"
-            style={{ gap: "0.5rem", alignItems: "center" }}
-          >
-            <FontAwesomeIcon icon={faClock} />
-            {formatDuration(trip.plannedDurationInMinutes)}
-          </div>
-          <div className="is-flex" style={{ alignItems: "center" }}>
-            <RushIcon
-              busyness={trip.crowdForecast}
-              style={{ display: "flex", alignItems: "center" }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="is-flex"
-        style={{
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <nav
-          className="breadcrumb has-arrow-separator"
-          aria-label="breadcrumbs"
-          style={{ marginBottom: "unset" }}
-        >
-          <ul>
-            {trip.legs.map((l) => (
-              <li key={l.idx}>
-                <Link href={`/journey/${l.product.number}`}>
-                  <a target="_blank">
-                    {l.product.operatorName} {l.product.longCategoryName}
-                  </a>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <button className="button is-info" onClick={() => setModal(trip)}>
-          Info
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function BulmaTextInput({
-  type,
-  id,
-  placeholder,
-  icon,
-  value,
-  setValue,
-}: {
-  type: HTMLInputTypeAttribute;
-  id: string;
-  placeholder: string;
-  icon: IconDefinition;
-  value: SmallStation | null | undefined;
-  setValue: Dispatch<SetStateAction<SmallStation | null | undefined>>;
-}) {
-  const [search, setSearch] = useState("");
-
-  const items = trpc.station.search.useQuery(search, {
-    enabled: search.length > 2,
-    refetchOnWindowFocus: false,
-  });
-
-  useEffect(() => {
-    const foundStation = items.data?.find((s) => s.namen.lang == search);
-    if (value?.code !== foundStation?.code && foundStation) {
-      setValue(foundStation);
-    } else if (search == "") {
-      setValue(null);
+  const shareFn = useCallback(() => {
+    if (navigator.share) {
+      navigator
+        ?.share({
+          text: `Reis van ${firstStopName} naar ${lastStopName}`,
+          url: trip.shareUrl.uri,
+        })
+        .then(console.log)
+        .catch(console.error);
     }
-  }, [search, items, value, setValue]);
+  }, [firstStopName, lastStopName, trip]);
 
   return (
     <>
-      <p className="control has-icons-left has-icons-right">
-        <input
-          className="input"
-          type={type}
-          placeholder={placeholder}
-          onChange={(e) => setSearch(e.target.value)}
-          value={search}
-          list={id}
-        />
-        <span className="icon is-small is-left">
-          <FontAwesomeIcon icon={icon} />
-        </span>
-        {value && (
-          <span className="icon is-small is-right">
-            <FontAwesomeIcon icon={faCheck} />
-          </span>
-        )}
-      </p>
-      <datalist id={id}>
-        {items.data?.map((s) => (
-          <option key={s.code} value={s.namen.lang}>
-            <div>{s.namen.lang}</div>
-          </option>
-        ))}
-      </datalist>
+      <Paper shadow="lg" p="md" radius="md" withBorder>
+        <Grid justify="space-between">
+          <Grid.Col span={3}>
+            <Group>
+              <Title order={5}>{formatTime(startTime)} </Title>
+              <IconArrowRight size={10} />{" "}
+              <Title order={5}>{formatTime(endTime)} </Title>
+            </Group>
+          </Grid.Col>
+
+          <Grid.Col span={3}>
+            <Group>
+              <Flex align="center" gap="0.5rem">
+                <IconArrowBounce size={10} />
+
+                <Text>{trip.transfers}x</Text>
+              </Flex>
+              <Flex align="center" gap="0.5rem">
+                <IconClock size={5} />
+
+                <Text>{formatDuration(trip.plannedDurationInMinutes)}</Text>
+              </Flex>
+              <RushIcon
+                busyness={trip.crowdForecast}
+                style={{ display: "flex", alignItems: "center" }}
+              />
+            </Group>
+          </Grid.Col>
+
+          <Grid.Col span={7} style={{ overflowX: "auto" }}>
+            <Breadcrumbs separator="→">
+              {trip.legs.map((l) => (
+                <Anchor
+                  key={l.idx}
+                  component={NextLink}
+                  href={`/journey/${l.product.number}`}
+                  target="_blank"
+                >
+                  {l.product.displayName}
+                </Anchor>
+              ))}
+            </Breadcrumbs>
+          </Grid.Col>
+          <Grid.Col span={4} style={{ display: "flex", alignContent: "right" }}>
+            <Button.Group>
+              <Button
+                variant="default"
+                onClick={() => setModelOpened(true)}
+                leftIcon={<IconInfoCircle />}
+              >
+                Info
+              </Button>
+              <Button
+                variant="default"
+                leftIcon={<IconExternalLink />}
+                component="a"
+                href={trip.shareUrl.uri}
+                target="_blank"
+              >
+                NS
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => shareFn()}
+                leftIcon={<IconShare />}
+                disabled={!canShare}
+              >
+                Deel
+              </Button>
+            </Button.Group>
+          </Grid.Col>
+        </Grid>
+      </Paper>
+
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModelOpened(false)}
+        title={
+          <Group>
+            <Title order={3}>{firstStopName}</Title>
+            <IconArrowRight />
+            <Title order={3}>{lastStopName}</Title>
+          </Group>
+        }
+      >
+        <Text>Komt later nog</Text>
+      </Modal>
     </>
+  );
+}
+
+function StationSelect({
+  value,
+  set,
+  type,
+}: {
+  value: string | null;
+  set: Dispatch<SetStateAction<string | null>>;
+  type: "to" | "from";
+}) {
+  const items = trpc.station.all.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+
+  const mappedItems: { value: string; label: string }[] =
+    items.data?.map((s) => ({ value: s.code, label: s.namen.lang })) || [];
+
+  return (
+    <Select
+      //   label="Van station..."
+      placeholder={type == "to" ? "Naar station..." : "Van station..."}
+      searchable
+      nothingFound="No options"
+      clearable
+      data={mappedItems}
+      value={value}
+      onChange={set}
+    />
+  );
+}
+
+function LookupNumber() {
+  const [number, setNumber] = useState("");
+  const router = useRouter();
+
+  const click = useCallback(() => {
+    router.push(`/journey/${number}`);
+  }, [router, number]);
+
+  return (
+    <Group align="end">
+      <TextInput
+        label="Ritnummer"
+        placeholder="xxxx"
+        description="Ritnummer van de reisplanner van NS"
+        type="number"
+        value={number}
+        onChange={(v) => setNumber(v.target.value)}
+      />
+
+      <Button rightIcon={<IconArrowBigRightLine />} onClick={click}>
+        Laat zien
+      </Button>
+    </Group>
   );
 }

@@ -28,18 +28,27 @@ export default function RushIcon({
   busyness,
   color = true,
   style,
+  size = 1,
 }: {
   stop?: Stop;
   busyness?: busyness;
   color?: boolean;
   style?: CSSProperties;
+  size?: number;
 }) {
   const _busyness = stop?.departures[0]?.crowdForecast || busyness || "UNKNOWN";
   const Icon = icons[_busyness] || icons.UNKNOWN;
   const iconColor = color ? colors[_busyness] : "white";
 
   return (
-    <div style={{ ...style, fill: iconColor }}>
+    <div
+      style={{
+        ...style,
+        fill: iconColor,
+        height: `${23 * size}px`,
+        width: `${23.985 * size}px`,
+      }}
+    >
       <Icon />
     </div>
   );

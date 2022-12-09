@@ -1,100 +1,206 @@
+import {
+  ActionIcon,
+  Burger,
+  Container,
+  createStyles,
+  Group,
+  Header,
+  Menu,
+  Title,
+  useMantineColorScheme,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { NextLink } from "@mantine/next";
+import { IconMoonStars, IconSun } from "@tabler/icons";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import useStations from "../../hooks/useStations";
 
-export default function NavBar() {
-  const router = useRouter();
-  const stations = useStations();
+import { useMemo } from "react";
 
-  const [expanded, setExpanded] = useState(false);
+import { trpc } from "../../helpers/trpc";
+
+const useStyles = createStyles((theme) => ({
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: "100%",
+  },
+  headerComp: {
+    marginBottom: "unset !important",
+  },
+  links: {
+    [theme.fn.smallerThan("xs")]: {
+      display: "none",
+    },
+  },
+
+  burger: {
+    [theme.fn.largerThan("xs")]: {
+      display: "none",
+    },
+  },
+
+  link: {
+    display: "block",
+    lineHeight: 1,
+    padding: "8px 12px",
+    borderRadius: theme.radius.sm,
+    textDecoration: "none",
+    color:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[0]
+        : theme.colors.gray[7],
+    fontSize: theme.fontSizes.sm,
+    fontWeight: 500,
+
+    "&:hover": {
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? theme.colors.dark[6]
+          : theme.colors.gray[0],
+    },
+  },
+
+  linkActive: {
+    "&, &:hover": {
+      backgroundColor: theme.fn.variant({
+        variant: "light",
+        color: theme.primaryColor,
+      }).background,
+      color: theme.fn.variant({ variant: "light", color: theme.primaryColor })
+        .color,
+    },
+  },
+}));
+
+interface Link {
+  link: string;
+  label: string;
+}
+
+const links: Link[] = [
+  { link: "/trains", label: "Kaart" },
+  { link: "/trains/list", label: "Treinen" },
+  { link: "/stations", label: "Stations" },
+  { link: "/planner", label: "Reisplanner" },
+  { link: "/about", label: "Over" },
+  { link: "https://github.com/wissehes/ns-spoorkaart", label: "GitHub" },
+];
+
+export default function Navbar() {
+  const [opened, { toggle }] = useDisclosure(false);
+  const { classes, cx } = useStyles();
+
+  const items = links.map((l) => <LinkItem l={l} key={l.link} />);
 
   return (
-    <nav className="navbar" role="navigation" aria-label="main navigation">
-      <div className="navbar-brand">
-        <p
-          className="is-size-4 has-text-primary"
-          style={{ margin: "10px 10px " }}
-        >
-          Treinen
-        </p>
+    <Header height={60} mb={120} className={classes.headerComp}>
+      <Container className={classes.header}>
+        <Title order={2}>Treinen</Title>
 
-        <a
-          role="button"
-          className={expanded ? "navbar-burger is-active" : "navbar-burger"}
-          aria-label="menu"
-          aria-expanded="false"
-          data-target="navBar"
-          onClick={() => setExpanded((a) => !a)}
-        >
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-        </a>
-      </div>
+        <Group spacing={5} className={classes.links}>
+          {items}
+          <ToggleDarkmode />
+        </Group>
 
-      <div
-        id="navBar"
-        className={expanded ? "navbar-menu is-active" : "navbar-menu"}
+        <Burger
+          opened={opened}
+          onClick={toggle}
+          className={classes.burger}
+          size="sm"
+        />
+      </Container>
+    </Header>
+  );
+}
+
+function LinkItem({ l }: { l: Link }) {
+  const { classes, cx } = useStyles();
+  const router = useRouter();
+
+  if (l.label == "Stations") {
+    return <StationsMenu />;
+  }
+
+  return (
+    <Link href={l.link}>
+      <a
+        className={cx(classes.link, {
+          [classes.linkActive]: l.link == router.pathname,
+        })}
+        target={l.link.startsWith("http") ? "_blank" : "_self"}
       >
-        <div className="navbar-start">
-          <Link href="/trains">
-            <a
-              className={
-                router.pathname == "/trains"
-                  ? "navbar-item is-active"
-                  : "navbar-item"
-              }
-            >
-              Kaart
-            </a>
-          </Link>
-          <Link href="/trains/list">
-            <a className="navbar-item">Treinen</a>
-          </Link>
+        {l.label}
+      </a>
+    </Link>
+  );
+}
 
-          <div className="navbar-item has-dropdown is-hoverable">
-            <a className="navbar-link">Stations</a>
+function StationsMenu() {
+  const { classes, cx } = useStyles();
+  const router = useRouter();
 
-            <div className="navbar-dropdown" style={{ zIndex: 100000000 }}>
-              <Link href="/stations/">
-                <a className="navbar-item">Alle stations</a>
-              </Link>
-              <hr className="dropdown-divider" />
+  const stationQ = trpc.station.all.useQuery(undefined, {
+    refetchOnMount: false,
+  });
+  const stations = useMemo(
+    () =>
+      stationQ.data?.filter(
+        (s) =>
+          (s.stationType == "MEGA_STATION" || s.sporen.length > 7) &&
+          s.land == "NL"
+      ),
+    [stationQ]
+  );
 
-              {stations.data
-                ?.filter(
-                  ({ stationType: t, sporen }) =>
-                    t == "MEGA_STATION" || sporen.length > 7
-                )
-                .filter(({ land }) => land == "NL")
-                .map((s) => (
-                  <Link key={s.code} href={`/stations/${s.code}`}>
-                    <a className="navbar-item">{s.namen.lang}</a>
-                  </Link>
-                ))}
-            </div>
-          </div>
+  return (
+    <Menu shadow="md" width={200}>
+      <Menu.Target>
+        <a
+          className={cx(classes.link, {
+            [classes.linkActive]: "/stations" == router.pathname,
+          })}
+          onClick={(event) => event.preventDefault()}
+        >
+          <span>Stations</span>
+        </a>
+      </Menu.Target>
 
-          <Link href="/planner">
-            <a className="navbar-item">Reisplanner</a>
-          </Link>
-        </div>
+      <Menu.Dropdown>
+        <Menu.Item component={NextLink} href="/stations">
+          <b>Alle stations</b>
+        </Menu.Item>
 
-        <div className="navbar-end">
-          <Link href="/about">
-            <a className="navbar-item">Over</a>
-          </Link>
-          <a
-            href="https://github.com/wissehes/ns-spoorkaart"
-            target="_blank"
-            rel="noreferrer"
-            className="navbar-item"
+        <Menu.Divider />
+
+        {stations?.map((s) => (
+          <Menu.Item
+            key={s.code}
+            component={NextLink}
+            href={`/stations/${s.code}`}
           >
-            GitHub
-          </a>
-        </div>
-      </div>
-    </nav>
+            {s.namen.lang}
+          </Menu.Item>
+        ))}
+      </Menu.Dropdown>
+    </Menu>
+  );
+}
+
+function ToggleDarkmode() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const dark = colorScheme === "dark";
+
+  return (
+    <ActionIcon
+      variant="outline"
+      color={dark ? "yellow" : "blue"}
+      onClick={() => toggleColorScheme()}
+      title="Toggle color scheme"
+    >
+      {dark ? <IconSun size={18} /> : <IconMoonStars size={18} />}
+    </ActionIcon>
   );
 }

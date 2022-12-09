@@ -5,7 +5,9 @@ import { StationInfoResponse } from "../types/getStationInfoResponse";
 
 import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
-import Link from "next/link";
+
+import { Box, Button, Center, Loader, Table, Text, Title } from "@mantine/core";
+import { NextLink } from "@mantine/next";
 
 export default function StationPopup({ station }: { station: SmallStation }) {
   const query = useQuery(
@@ -20,21 +22,21 @@ export default function StationPopup({ station }: { station: SmallStation }) {
   );
 
   return (
-    <div
+    <Box
       style={{
         display: "flex",
         flexDirection: "column",
+        colorScheme: "light",
       }}
     >
-      <h1 className="is-size-5">
-        <b>🚉 Station {station.namen.lang}</b>
-      </h1>
-      <p>
+      <Title order={3}>🚉 Station {station.namen.lang}</Title>
+
+      <Text>
         Sporen: <b>{station.sporen.map((s) => s.spoorNummer).join(", ")}</b>
-      </p>
+      </Text>
 
       <div>
-        <table
+        <Table
           className={query.isLoading ? "table is-loading" : "table"}
           style={{ width: "100%" }}
         >
@@ -54,27 +56,24 @@ export default function StationPopup({ station }: { station: SmallStation }) {
                   key={a.product.number}
                   className={styles.stationtable_content}
                 >
-                  <th>{formatTime(a.actualDateTime)}</th>
-                  <th>{a.product.longCategoryName}</th>
-                  <th>{a.plannedTrack}</th>
-                  <th>{a.direction}</th>
+                  <td>{formatTime(a.actualDateTime)}</td>
+                  <td>{a.product.longCategoryName}</td>
+                  <td>{a.plannedTrack}</td>
+                  <td>{a.direction}</td>
                 </tr>
               ))}
           </tbody>
-        </table>
+        </Table>
         {query.isLoading && (
-          <progress
-            style={{ paddingLeft: "1rem", paddingRight: "1rem" }}
-            className="progress is-info"
-            max="100"
-          >
-            60%
-          </progress>
+          <Center>
+            <Loader style={{ margin: "1rem" }} />
+          </Center>
         )}
       </div>
-      <Link href={`/stations/${station.code}`}>
-        <a className="button is-small is-primary">Meer info</a>
-      </Link>
-    </div>
+
+      <Button component={NextLink} href={`/stations/${station.code}`}>
+        Meer info
+      </Button>
+    </Box>
   );
 }

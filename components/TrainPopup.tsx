@@ -4,14 +4,15 @@ import axios from "axios";
 import { JourneyDetails, Stop } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
-import Link from "next/link";
 import useStations from "../hooks/useStations";
 import { useMemo } from "react";
+import { Anchor, Box, Button, Group, List, Text, Title } from "@mantine/core";
+import { NextLink } from "@mantine/next";
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
     <div style={{ height: "4rem", overflowX: "auto" }}>
-      <div className="is-flex" style={{ height: "3rem" }}>
+      <div style={{ display: "flex", height: "3rem" }}>
         {train.info?.materieeldelen.map((m) =>
           m.bakken
             .filter((p) => p.afbeelding)
@@ -21,7 +22,7 @@ function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
                 src={p.afbeelding?.url || ""}
                 alt={p.afbeelding.url}
                 key={p.afbeelding.url}
-                height="2rem"
+                height="100%"
               />
             ))
         )}
@@ -39,7 +40,6 @@ const TrainPopupHeader = ({
 }) => {
   const product = journey?.stops[0]?.departures[0]?.product;
 
-  // const;
   const destination =
     journey?.stops[0].destination ||
     journey?.stops[journey.stops.length - 1].stop.name ||
@@ -50,19 +50,17 @@ const TrainPopupHeader = ({
   );
 
   return (
-    <h1 className="is-size-5" style={{ marginBottom: "5px" }}>
+    <Title order={4}>
       🚂 {product?.operatorName} {product?.longCategoryName || train.type} naar{" "}
       <TrainStationLink text={destination} id={destinationCode} />
-    </h1>
+    </Title>
   );
 };
 
 const TrainStationLink = ({ text, id }: { text: string; id?: string }) => (
-  <Link href={id ? `/trains?station=${id}` : ``}>
-    <a>
-      <b>{text}</b>
-    </a>
-  </Link>
+  <Anchor component={NextLink} href={id ? `/trains?station=${id}` : ``}>
+    {text}
+  </Anchor>
 );
 
 const calcSeats = (t: TreinWithInfo) => {
@@ -108,7 +106,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
   }, [stations, train]);
 
   return (
-    <div
+    <Box
       style={{
         width: "22rem",
       }}
@@ -116,22 +114,28 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
       <TrainPopupHeader train={train} journey={data} />
 
       <TrainPartsVisualized train={train} />
-      <ul>
+
+      <List size="sm">
         {foundStation && (
-          <li>
-            <Link href={`/trains?station=${foundStation.code}`}>
-              <a>
-                Volgend station: <b>{foundStation.namen.lang}</b>
-              </a>
-            </Link>
-          </li>
+          <List.Item>
+            <Text>
+              Volgend station:{" "}
+              <Anchor
+                component={NextLink}
+                href={`/trains?station=${foundStation.code}`}
+              >
+                {foundStation.namen.lang}
+              </Anchor>
+            </Text>
+          </List.Item>
         )}
-        <li>
+
+        <List.Item>
           Type <b>{train.info?.type}</b> @ <b>{Math.round(train.snelheid)}</b>{" "}
           km/u
-        </li>
-        <li>Zitplaatsen: {calcSeats(train)}</li>
-        <li>
+        </List.Item>
+        <List.Item>Zitplaatsen: {calcSeats(train)}</List.Item>
+        <List.Item>
           Richting:{" "}
           <div
             style={{
@@ -143,19 +147,22 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
           >
             ⬆️
           </div>
-        </li>
-        <li>{data?.notes.map((a) => a.text).join(", ")}</li>
-      </ul>
-      <div className="is-flex" style={{ gap: "1rem" }}>
-        {train.materieel && train.materieel[0] && (
-          <Link href={`/train/${train.materieel[0]}`}>
-            <a className="button is-small is-primary">Meer info</a>
-          </Link>
+        </List.Item>
+        {data?.notes[0] && (
+          <List.Item>{data?.notes.map((a) => a.text).join(", ")}</List.Item>
         )}
-        <Link href={`/journey/${train.treinNummer}`}>
-          <a className="button is-small is-primary">Rit</a>
-        </Link>
-      </div>
-    </div>
+      </List>
+
+      <Group>
+        {train?.materieel && (
+          <Button component={NextLink} href={`/train/${train.materieel[0]}`}>
+            Meer info
+          </Button>
+        )}
+        <Button component={NextLink} href={`/journey/${train.treinNummer}`}>
+          Rit
+        </Button>
+      </Group>
+    </Box>
   );
 }

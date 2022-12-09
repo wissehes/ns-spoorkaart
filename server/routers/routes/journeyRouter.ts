@@ -1,5 +1,6 @@
 import { z } from "zod";
 import NS from "../../../helpers/NS";
+import { getJourneyDetailsResponse } from "../../../types/getJourneyDetailsResponse";
 import { getTripPlannerResponse } from "../../../types/NS/journey/getTripPlannerResponse";
 import { procedure, router } from "../../trpc";
 
@@ -15,6 +16,17 @@ export const journeyRouter = router({
     .query(async ({ input }) => {
       const trip = await planTrip(input);
       return trip;
+    }),
+  journey: procedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const { data } = await NS.get<getJourneyDetailsResponse>(
+        "/reisinformatie-api/api/v2/journey",
+        {
+          params: { train: input.id },
+        }
+      );
+      return data.payload;
     }),
 });
 

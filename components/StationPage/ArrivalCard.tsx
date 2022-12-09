@@ -1,80 +1,107 @@
-import SpoorIcon from "./SpoorIcon";
-
-import { ArrivalWithJourney } from "../../pages/stations/[code]/arrivals";
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Flex,
+  Grid,
+  Group,
+  Paper,
+  Text,
+  Title,
+} from "@mantine/core";
+import { NextLink } from "@mantine/next";
+import { IconInfoCircle } from "@tabler/icons";
+import formatTime from "../../helpers/formatTime";
 import {
   departureStatus,
   formatDelay,
   timeUntil,
-  formatTime,
 } from "../../helpers/StationPage";
+import { ArrivalWithJourney } from "../../types/ArrivalWithJourney";
+import SpoorIcon from "./SpoorIcon";
 
-export default function ArrivalCard({
-  arrival: a,
-}: {
-  arrival: ArrivalWithJourney;
-}) {
+export default function ArrivalCard({ a }: { a: ArrivalWithJourney }) {
   const delay = a.stop?.arrivals[0]?.delayInSeconds || 0;
   const product = a.arrival.product;
   const destination = a.stop?.destination;
+  const notes = a.journey?.notes.map((a) => a.text);
 
   return (
-    <div className="box">
-      <div className="is-flex is-justify-content-space-between is-align-content-center">
-        <div className="is-flex">
-          <div style={{ marginRight: "1rem" }}>
-            <p className="is-size-3 is-align-content-center">
-              {formatTime(a.arrival.plannedDateTime)}
-            </p>
-            {delay > 30 && (
-              <p className="has-text-danger">+{formatDelay(delay || 0)}</p>
-            )}
-            <p className="has-text-grey">
-              {timeUntil(a.arrival.actualDateTime)}
-            </p>
-          </div>
-          <div>
-            <h1 className="is-size-4">
-              {a.arrival.product.longCategoryName} van <b>{a.arrival.origin}</b>{" "}
-              naar <b>{destination}</b>
-            </h1>
+    <Paper shadow="lg" p="md" radius="md" withBorder>
+      <Grid grow>
+        <Grid.Col span={2}>
+          <Box>
+            <Flex gap="0.25rem" align="center">
+              <Title order={2}>{formatTime(a.arrival.plannedDateTime)}</Title>
+              {delay > 30 && <Text c="red">+{formatDelay(delay || 0)}</Text>}
 
-            {/* {a.arrival.routeStations.length > 0 && (
-              <h3>
-                Via{" "}
-                <b>
-                  {d.departure.routeStations
-                    .map((r) => r.mediumName)
-                    .join(", ")}
-                </b>
-              </h3>
-            )} */}
-          </div>
-        </div>
-        <div>
-          {/* <p>Spoor {d.departure.plannedTrack}</p> */}
-          <SpoorIcon spoorNr={a.arrival.plannedTrack} />
-          <p>{a.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</p>
-          <p>
-            {product.operatorName} {product.longCategoryName} {product.number}
-          </p>
-        </div>
-      </div>
-      <div className="is-flex" style={{ overflow: "scroll", height: "2.5rem" }}>
-        {a.stop?.actualStock?.trainParts
-          .filter((p) => p.image)
-          .map((p) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={p.image?.uri || ""}
-              alt={p.stockIdentifier}
-              key={p.stockIdentifier}
-              //   layout="fill"
-            />
+              <ActionIcon
+                component={NextLink}
+                href={`/journey/${product.number}`}
+              >
+                <IconInfoCircle size={20} />
+              </ActionIcon>
+            </Flex>
+            <Text c="gray">{timeUntil(a.arrival.actualDateTime)}</Text>
+          </Box>
+        </Grid.Col>
+
+        <Grid.Col span={8}>
+          <Box>
+            <Title order={3} weight="normal">
+              {product.longCategoryName} naar <b>{destination}</b>
+            </Title>
+            <Text fz={"lg"}>
+              Van {a.stop?.departures[0]?.origin.name || "?"}
+            </Text>
+          </Box>
+        </Grid.Col>
+
+        <Grid.Col span={"auto"}>
+          <Box>
+            <SpoorIcon spoorNr={a.arrival.plannedTrack} />
+          </Box>
+        </Grid.Col>
+      </Grid>
+      {(a.stop?.actualStock?.trainParts.filter((p) => p.image)?.length || 0) >
+        0 && (
+        <Flex style={{ overflow: "scroll", height: "3.5rem" }}>
+          {a.stop?.actualStock?.trainParts
+            .filter((p) => p.image)
+            .map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.image?.uri || ""}
+                alt={p.stockIdentifier}
+                key={p.stockIdentifier + i.toString()}
+                style={{
+                  height: "auto",
+                  width: "auto",
+                  maxHeight: "3rem",
+                  maxWidth: "fit-content",
+                }}
+              />
+            ))}
+        </Flex>
+      )}
+      <Group>
+        <Text weight="bolder">{departureStatus(a.arrival.arrivalStatus)}</Text>
+
+        <Badge>{a.stop?.actualStock?.numberOfSeats || "?"} Zitplaatsen</Badge>
+
+        <Badge color="cyan">
+          {product.operatorName} {product.longCategoryName} {product.number}
+        </Badge>
+
+        <Badge color="teal">{a.stop?.actualStock?.trainType}</Badge>
+      </Group>
+      {notes && (
+        <Group>
+          {notes.map((n) => (
+            <Text key={n}>{n}</Text>
           ))}
-      </div>
-      <div>
-        <p>{departureStatus(a.arrival.arrivalStatus)}</p>
-      </div>
-    </div>
+        </Group>
+      )}
+    </Paper>
   );
 }

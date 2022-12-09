@@ -19,8 +19,9 @@ import bbox from "@turf/bbox";
 import { time } from "../../helpers/TrainPage";
 import useTrains from "../../hooks/useTrains";
 import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
+import { Button, Flex, SegmentedControl, Text } from "@mantine/core";
 
-export default function NewJourneyMap({
+export default function JourneyMap({
   geojson,
   stops,
   train,
@@ -31,9 +32,9 @@ export default function NewJourneyMap({
 }) {
   const map = createRef<MapRef>();
   const [popup, setPopup] = useState<Stop | null>(null);
-  const [state, setState] = useState<"overview" | "following" | "custom">(
-    "overview"
-  );
+  const [state, setState] = useState<
+    "overview" | "following" | "custom" | string
+  >("overview");
   const parsed = useMemo(() => bbox(geojson), [geojson]);
   const speed = useMemo(() => Math.round(train?.snelheid || 0), [train]);
 
@@ -78,7 +79,7 @@ export default function NewJourneyMap({
           id="map"
           ref={map}
           mapLib={maplibreGl}
-          style={{ height: "300px", zIndex: 1, borderRadius: "10px" }}
+          style={{ height: "400px", zIndex: 1, borderRadius: "10px" }}
           scrollZoom={false}
           mapStyle="https://api.maptiler.com/maps/ea0be450-77fe-405d-8871-1f29aefe697a/style.json?key=Rs8qUKBURAgmwFrBW6Bj"
           initialViewState={{
@@ -136,33 +137,25 @@ export default function NewJourneyMap({
           )}
         </Map>
       </MapProvider>
-      <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          marginTop: "1rem",
-          alignItems: "center",
-        }}
-      >
-        <button
-          className={`button ${state == "overview" && "is-active"}`}
+
+      <Flex gap="1rem" style={{ marginTop: "1rem" }}>
+        <Button
+          title="Overzicht"
           onClick={fitBounds}
+          variant={state == "overview" ? "filled" : "outline"}
         >
           Overzicht
-        </button>
-        {train && (
-          <>
-            <button
-              className={`button ${state == "following" && "is-active"}`}
-              onClick={followTrain}
-            >
-              Volg trein
-            </button>
-
-            <p>Snelheid: {speed} km/h</p>
-          </>
-        )}
-      </div>
+        </Button>
+        <Button
+          title="Volg trein"
+          disabled={!train}
+          onClick={followTrain}
+          variant={state == "following" ? "filled" : "outline"}
+        >
+          Volg trein
+        </Button>
+        <Text style={{ alignSelf: "center" }}>Snelheid: {speed} km/h</Text>
+      </Flex>
     </>
   );
 }

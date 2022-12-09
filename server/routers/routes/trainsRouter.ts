@@ -11,37 +11,85 @@ import DB from "../../../lib/DB";
 import Jimp from "jimp";
 // @ts-ignore - because replace-color doesn't have ts declarations
 import replaceColor from "replace-color";
+import { Trein } from "../../../types/getTrainsResponse";
 
 export const trainsRouter = router({
   getTrains: procedure.query(async () => {
     const data = await getTrains();
-    const trainsInfo = await getTrainInfo(data.payload.treinen);
-
-    const treinenMetInfo: TreinWithInfo[] = [];
-
-    for (const trein of data.payload.treinen) {
-      const foundInfo = trainsInfo.find(
-        (a) => a.ritnummer == trein.treinNummer
-      );
-      if (foundInfo) {
-        treinenMetInfo.push({
-          ...trein,
-          info: foundInfo,
-        });
-      } else {
-        treinenMetInfo.push({
-          ...trein,
-        });
-      }
-    }
-
-    await downloadAndSaveImage(treinenMetInfo);
-    await DB.saveTrains(treinenMetInfo);
-    return {
-      trains: treinenMetInfo,
-    };
+    const treinenMetInfo = await getTrainData(data.payload.treinen);
+    return treinenMetInfo;
   }),
+  paginated: procedure
+    .input(
+      z.object({
+        page: z.number(),
+        itemsPerPage: z.number(),
+        search: z.string().nullish(),
+      })
+    )
+    .query(async ({ input: { page, itemsPerPage, search } }) => {
+      const {
+        payload: { treinen },
+      } = await getTrains();
+      const trains = await getTrainData(treinen);
+
+      const filtered = search
+        ? trains.filter((t) => filterFunction(t, search || ""))
+        : trains;
+
+      const paginated: TreinWithInfo[][] = [];
+
+      for (let i = 0; i < filtered.length; i += itemsPerPage) {
+        paginated.push(filtered.slice(i, i + itemsPerPage));
+      }
+
+      const thisPage = paginated[page - 1] || [];
+
+      return {
+        items: thisPage,
+        pages: paginated.length,
+      };
+    }),
 });
+
+const filterFunction = (t: TreinWithInfo, searchValue: string) => {
+  return (
+    t.type.toLowerCase().includes(searchValue) ||
+    t.treinNummer.toString().includes(searchValue) ||
+    t.info?.vervoerder.toLowerCase().includes(searchValue) ||
+    t.info?.materieeldelen.find(
+      (s) =>
+        s.materieelnummer?.toString().includes(searchValue) ||
+        s.type.toLowerCase().includes(searchValue)
+    ) ||
+    t.info?.station.includes(searchValue)
+  );
+};
+
+async function getTrainData(treinen: Trein[]) {
+  if (!treinen[0]) return [];
+  const trainsInfo = await getTrainInfo(treinen);
+
+  const treinenMetInfo: TreinWithInfo[] = [];
+
+  for (const trein of treinen) {
+    const foundInfo = trainsInfo.find((a) => a.ritnummer == trein.treinNummer);
+    if (foundInfo) {
+      treinenMetInfo.push({
+        ...trein,
+        info: foundInfo,
+      });
+    } else {
+      treinenMetInfo.push({
+        ...trein,
+      });
+    }
+  }
+
+  await downloadAndSaveImage(treinenMetInfo);
+  await DB.saveTrains(treinenMetInfo);
+  return treinenMetInfo;
+}
 
 /**
  * This mechanism first filters all trains, to make sure the material parts exist,
