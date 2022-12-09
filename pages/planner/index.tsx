@@ -1,6 +1,7 @@
 import {
   Anchor,
   Badge,
+  Box,
   Breadcrumbs,
   Button,
   Center,
@@ -12,11 +13,13 @@ import {
   Paper,
   Select,
   Text,
+  TextInput,
   Timeline,
   Title,
 } from "@mantine/core";
 import { NextLink } from "@mantine/next";
 import {
+  IconArrowBigRightLine,
   IconArrowBounce,
   IconArrowRight,
   IconClock,
@@ -26,6 +29,7 @@ import {
   IconShare,
 } from "@tabler/icons";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import {
   Dispatch,
   SetStateAction,
@@ -77,7 +81,7 @@ export default function PlannerPage() {
 
         <Container className={classes.container}>
           <Title>Reisplanner</Title>
-          <Group grow>
+          <Group grow style={{ marginBottom: "1rem" }}>
             <StationSelect value={fromCode} set={setFromCode} type="from" />
 
             <IconArrowRight size={30} />
@@ -93,6 +97,11 @@ export default function PlannerPage() {
               Plan
             </Button>
           </Group>
+
+          <Box>
+            <Title order={3}>Of ritnummer van NS opzoeken</Title>
+            <LookupNumber />
+          </Box>
 
           <Flex direction="column" gap="md" style={{ marginTop: "1rem" }}>
             {data.data?.trips.map((trip) => (
@@ -261,5 +270,31 @@ function StationSelect({
       value={value}
       onChange={set}
     />
+  );
+}
+
+function LookupNumber() {
+  const [number, setNumber] = useState("");
+  const router = useRouter();
+
+  const click = useCallback(() => {
+    router.push(`/journey/${number}`);
+  }, [router, number]);
+
+  return (
+    <Group align="end">
+      <TextInput
+        label="Ritnummer"
+        placeholder="xxxx"
+        description="Ritnummer van de reisplanner van NS"
+        type="number"
+        value={number}
+        onChange={(v) => setNumber(v.target.value)}
+      />
+
+      <Button rightIcon={<IconArrowBigRightLine />} onClick={click}>
+        Laat zien
+      </Button>
+    </Group>
   );
 }
