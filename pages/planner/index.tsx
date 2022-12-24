@@ -1,7 +1,6 @@
 import {
   Alert,
   Anchor,
-  Badge,
   Box,
   Breadcrumbs,
   Button,
@@ -17,7 +16,6 @@ import {
   Select,
   Text,
   TextInput,
-  Timeline,
   Title,
 } from "@mantine/core";
 import { NextLink } from "@mantine/next";
@@ -284,12 +282,22 @@ function StationSelect({
 }
 
 function LookupNumber() {
+  const [opened, setOpened] = useState(false);
   const [number, setNumber] = useState("");
-  const router = useRouter();
 
-  const click = useCallback(() => {
-    router.push(`/journey/${number}`);
-  }, [router, number]);
+  const query = trpc.journey.journey.useQuery(
+    { id: number },
+    { enabled: false }
+  );
+
+  const click = () => {
+    if (query.isFetched) {
+      setOpened(true);
+    } else {
+      query.refetch();
+      setOpened(true);
+    }
+  };
 
   return (
     <Group align="end">
@@ -300,11 +308,40 @@ function LookupNumber() {
         type="number"
         value={number}
         onChange={(v) => setNumber(v.target.value)}
+        onKeyDown={(v) => v.key == "Enter" && click()}
       />
 
-      <Button rightIcon={<IconArrowBigRightLine />} onClick={click}>
+      <Button
+        rightIcon={<IconArrowBigRightLine />}
+        onClick={click}
+        loading={query.isFetching}
+      >
         Laat zien
       </Button>
+      <Drawer
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title="Treininfo"
+        padding="xl"
+        size="xl"
+      >
+        {query.isLoading && (
+          <Center>
+            <Loader />
+          </Center>
+        )}
+
+        {query.isError && (
+          <Alert
+            icon={<IconAlertCircle size={16} />}
+            title="Oh nee!"
+            color="red"
+          >
+            {query.error.message}
+          </Alert>
+        )}
+        {query.data && <JourneyInfoDrawer journey={query.data} />}
+      </Drawer>
     </Group>
   );
 }
