@@ -7,9 +7,13 @@ Naast de kaart met alle treinen, kan je ook de stations zien (als je inzoomt). J
 
 ## to do
 - [ ] Storingen laten zien
-- [ ] Vervang Bulma met Mantine UI
 - [ ] Redis (gedeeltelijk?) vervangen met Prisma
 - [ ] README verbeteren (incl. screenshots updaten)
+- [ ] Optie om de reis met een treinstelnummer op te zoeken
+- [ ] Dependencies opruimen (oude deps verwijderen)
+- [ ] "over" pagina weghalen/updaten
+
+- [x] Vervang Bulma met Mantine UI
 
 ## Screenshots
 ### Kaart
