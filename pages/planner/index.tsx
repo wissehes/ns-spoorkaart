@@ -1,4 +1,5 @@
 import {
+  Alert,
   Anchor,
   Badge,
   Box,
@@ -6,9 +7,11 @@ import {
   Button,
   Center,
   Container,
+  Drawer,
   Flex,
   Grid,
   Group,
+  Loader,
   Modal,
   Paper,
   Select,
@@ -19,6 +22,7 @@ import {
 } from "@mantine/core";
 import { NextLink } from "@mantine/next";
 import {
+  IconAlertCircle,
   IconArrowBigRightLine,
   IconArrowBounce,
   IconArrowRight,
@@ -39,6 +43,7 @@ import {
 } from "react";
 import Navbar from "../../components/NavBar";
 import RushIcon from "../../components/TrainPage/RushIcon";
+import JourneyInfoDrawer from "../../components/TravelInfoPage/JourneyInfoDrawer";
 import formatTime from "../../helpers/formatTime";
 import { formatDuration } from "../../helpers/PlannerPage";
 import { trpc } from "../../helpers/trpc";
@@ -98,9 +103,14 @@ export default function PlannerPage() {
             </Button>
           </Group>
 
-          <Box>
+          <Box style={{ marginBottom: "1rem" }}>
             <Title order={3}>Of ritnummer van NS opzoeken</Title>
             <LookupNumber />
+          </Box>
+
+          <Box>
+            <Title order={3}>Treinstel opzoeken</Title>
+            <LookupTrainNumber />
           </Box>
 
           <Flex direction="column" gap="md" style={{ marginTop: "1rem" }}>
@@ -296,5 +306,78 @@ function LookupNumber() {
         Laat zien
       </Button>
     </Group>
+  );
+}
+
+function LookupTrainNumber() {
+  const [number, setNumber] = useState("");
+  const [opened, setOpened] = useState(false);
+
+  const query = trpc.journey.trainNumber.useQuery(number, {
+    enabled: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const click = () => {
+    if (query.isFetched) {
+      setOpened(true);
+    } else {
+      query.refetch();
+      setOpened(true);
+    }
+  };
+
+  return (
+    <>
+      <Box style={{ marginBottom: "1rem" }}>
+        <Group align="end">
+          <TextInput
+            label="Treinstelnummer"
+            placeholder="xxxx"
+            // description=""
+            type="number"
+            value={number}
+            onChange={(v) => setNumber(v.target.value)}
+            onKeyDown={(v) => v.key == "Enter" && click()}
+          />
+
+          <Button
+            rightIcon={<IconArrowBigRightLine />}
+            onClick={click}
+            loading={query.isFetching}
+          >
+            Laat zien
+          </Button>
+        </Group>
+        <Text fz="xs" c="dimmed">
+          Nummer van het treinstel waar je in zit. Staat meestal boven de deur.
+        </Text>
+      </Box>
+
+      <Drawer
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title="Treininfo"
+        padding="xl"
+        size="xl"
+      >
+        {query.isLoading && (
+          <Center>
+            <Loader />
+          </Center>
+        )}
+
+        {query.isError && (
+          <Alert
+            icon={<IconAlertCircle size={16} />}
+            title="Oh nee!"
+            color="red"
+          >
+            {query.error.message}
+          </Alert>
+        )}
+        {query.data && <JourneyInfoDrawer journey={query.data} />}
+      </Drawer>
+    </>
   );
 }
