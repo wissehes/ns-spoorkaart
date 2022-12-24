@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Router from "next/router";
 import ProgressBar from "@badrap/bar-of-progress";
-import { config } from "@fortawesome/fontawesome-svg-core";
-import "@fortawesome/fontawesome-svg-core/styles.css";
 import { trpc } from "../helpers/trpc";
 import {
   ColorScheme,
@@ -23,8 +21,6 @@ const progress = new ProgressBar({
 const client = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
-  config.autoAddCss = false;
-
   Router.events.on("routeChangeStart", progress.start);
   Router.events.on("routeChangeError", progress.finish);
   Router.events.on("routeChangeComplete", progress.finish);
