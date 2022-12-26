@@ -31,7 +31,6 @@ import {
   IconShare,
 } from "@tabler/icons";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import {
   Dispatch,
   SetStateAction,
@@ -51,6 +50,38 @@ import { Trip } from "../../types/NS/journey/getTripPlannerResponse";
 export default function PlannerPage() {
   const { classes } = useStyles();
 
+  return (
+    <>
+      <Head>
+        <title>Reisinformatie | NS Spoorkaart</title>
+      </Head>
+      <main className={classes.main}>
+        <Navbar />
+
+        <Container className={classes.container}>
+          <Title>Reisinformatie</Title>
+
+          <Box style={{ marginBottom: "1rem" }}>
+            <Title order={3}>Reisplanner</Title>
+            <Planner />
+          </Box>
+
+          <Box style={{ marginBottom: "1rem", marginTop: "1rem" }}>
+            <Title order={3}>Of ritnummer van NS opzoeken</Title>
+            <LookupNumber />
+          </Box>
+
+          <Box>
+            <Title order={3}>Treinstel opzoeken</Title>
+            <LookupTrainNumber />
+          </Box>
+        </Container>
+      </main>
+    </>
+  );
+}
+
+function Planner() {
   const stations = trpc.station.all.useQuery(undefined, {
     refetchOnWindowFocus: false,
   });
@@ -74,50 +105,34 @@ export default function PlannerPage() {
     },
     { enabled: false }
   );
+
   return (
     <>
-      <Head>
-        <title>Reisplanner | NS Spoorkaart</title>
-      </Head>
-      <main className={classes.main}>
-        <Navbar />
+      <Group grow style={{ marginBottom: "1rem" }}>
+        <StationSelect value={fromCode} set={setFromCode} type="from" />
 
-        <Container className={classes.container}>
-          <Title>Reisplanner</Title>
-          <Group grow style={{ marginBottom: "1rem" }}>
-            <StationSelect value={fromCode} set={setFromCode} type="from" />
+        <IconArrowRight size={30} />
 
-            <IconArrowRight size={30} />
+        <StationSelect value={toCode} set={setToCode} type="to" />
 
-            <StationSelect value={toCode} set={setToCode} type="to" />
+        <Button
+          leftIcon={<IconSearch />}
+          disabled={!to || !from}
+          loading={data.isFetching}
+          onClick={() => data.refetch()}
+        >
+          Plan
+        </Button>
+      </Group>
+      {data.data && (
+        <Flex direction="column" gap="md" style={{ marginTop: "1rem" }}>
+          <Title order={3}>Reisadviezen</Title>
 
-            <Button
-              leftIcon={<IconSearch />}
-              disabled={!to || !from}
-              loading={data.isFetching}
-              onClick={() => data.refetch()}
-            >
-              Plan
-            </Button>
-          </Group>
-
-          <Box style={{ marginBottom: "1rem" }}>
-            <Title order={3}>Of ritnummer van NS opzoeken</Title>
-            <LookupNumber />
-          </Box>
-
-          <Box>
-            <Title order={3}>Treinstel opzoeken</Title>
-            <LookupTrainNumber />
-          </Box>
-
-          <Flex direction="column" gap="md" style={{ marginTop: "1rem" }}>
-            {data.data?.trips.map((trip) => (
-              <TripPaper key={trip.idx} trip={trip} />
-            ))}
-          </Flex>
-        </Container>
-      </main>
+          {data.data.trips.map((trip) => (
+            <TripPaper key={trip.idx} trip={trip} />
+          ))}
+        </Flex>
+      )}
     </>
   );
 }
@@ -387,7 +402,8 @@ function LookupTrainNumber() {
           </Button>
         </Group>
         <Text fz="xs" c="dimmed">
-          Nummer van het treinstel waar je in zit. Staat meestal boven de deur.
+          Nummer van het treinstel waar je in zit. Deze staat meestal boven de
+          deur.
         </Text>
       </Box>
 
