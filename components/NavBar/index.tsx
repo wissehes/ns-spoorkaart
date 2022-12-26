@@ -54,6 +54,7 @@ const useStyles = createStyles((theme) => ({
         : theme.colors.gray[7],
     fontSize: theme.fontSizes.sm,
     fontWeight: 500,
+    cursor: "pointer",
 
     "&:hover": {
       backgroundColor:
@@ -84,7 +85,7 @@ const links: Link[] = [
   { link: "/trains", label: "Kaart" },
   { link: "/trains/list", label: "Treinen" },
   { link: "/stations", label: "Stations" },
-  { link: "/planner", label: "Reisplanner" },
+  { link: "/planner", label: "Reisinformatie" },
   { link: "/about", label: "Over" },
   { link: "https://github.com/wissehes/ns-spoorkaart", label: "GitHub" },
 ];
