@@ -13,6 +13,14 @@ import Jimp from "jimp";
 // @ts-ignore - because replace-color doesn't have ts declarations
 import replaceColor from "replace-color";
 import { Trein } from "../../../types/getTrainsResponse";
+import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
+import getJourney from "../../../helpers/getJourney";
+
+type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
+type TrainAndJourney = {
+  train: TrainWithInfoAndDistance;
+  journey?: JourneyDetails;
+};
 
 export const trainsRouter = router({
   getTrains: procedure.query(async () => {
@@ -41,12 +49,14 @@ export const trainsRouter = router({
 
       filtered.sort((a, b) => a.distance - b.distance);
 
-      const withInfo = await getTrainData(filtered);
-
-      return withInfo.map((t) => {
+      const withInfo = (await getTrainData(filtered.slice(0, 5))).map((t) => {
         const distance = filtered.find((a) => a.ritId == t.ritId)?.distance;
         return { ...t, distance };
       });
+
+      // const trainsWithJourney = await getJourneys(withInfo);
+
+      return withInfo;
     }),
   paginated: procedure
     .input(
@@ -168,3 +178,17 @@ async function downloadAndSaveImage(trains: TreinWithInfo[]) {
     await DB.saveTrainImg({ type: mat.type, base64data: base64 });
   }
 }
+
+async function getJourneys(trains: TrainWithInfoAndDistance[]) {
+  const journeys: TrainAndJourney[] = [];
+
+  for (const t of trains) {
+    const j = await getJourney(t.ritId);
+    journeys.push({ train: t, journey: j });
+    wait(300);
+  }
+
+  return journeys;
+}
+
+const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
