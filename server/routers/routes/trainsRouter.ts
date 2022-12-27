@@ -5,6 +5,7 @@ import { router, procedure } from "../../trpc";
 import getTrains from "../../../helpers/getTrains";
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
+import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 // Database
 import DB from "../../../lib/DB";
 // Other deps
@@ -19,6 +20,34 @@ export const trainsRouter = router({
     const treinenMetInfo = await getTrainData(data.payload.treinen);
     return treinenMetInfo;
   }),
+  nearbyTrains: procedure
+    .input(
+      z.object({
+        latitude: z.number(),
+        longitude: z.number(),
+        radius: z.number().min(50).max(1000),
+      })
+    )
+    .query(async ({ input }) => {
+      const trains = await getTrains();
+
+      const filtered = trains.payload.treinen.map((t) => {
+        const distance = getDistanceFromGPS({
+          location1: { lat: input.latitude, lon: input.longitude },
+          location2: { lat: t.lat, lon: t.lng },
+        });
+        return { ...t, distance };
+      });
+
+      filtered.sort((a, b) => a.distance - b.distance);
+
+      const withInfo = await getTrainData(filtered);
+
+      return withInfo.map((t) => {
+        const distance = filtered.find((a) => a.ritId == t.ritId)?.distance;
+        return { ...t, distance };
+      });
+    }),
   paginated: procedure
     .input(
       z.object({
