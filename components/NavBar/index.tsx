@@ -79,11 +79,19 @@ const useStyles = createStyles((theme) => ({
 interface Link {
   link: string;
   label: string;
+  items?: Link[];
 }
 
 const links: Link[] = [
   { link: "/trains", label: "Kaart" },
-  { link: "/trains/list", label: "Treinen" },
+  {
+    link: "/trains/list",
+    label: "Treinen",
+    items: [
+      { link: "/trains/list", label: "Alle treinen" },
+      { link: "/trains/nearby", label: "In de buurt" },
+    ],
+  },
   { link: "/stations", label: "Stations" },
   { link: "/planner", label: "Reisinformatie" },
   { link: "/about", label: "Over" },
@@ -125,18 +133,43 @@ function LinkItem({ l }: { l: Link }) {
     return <StationsMenu />;
   }
 
-  return (
-    <Link href={l.link}>
-      <a
-        className={cx(classes.link, {
-          [classes.linkActive]: l.link == router.pathname,
-        })}
-        target={l.link.startsWith("http") ? "_blank" : "_self"}
-      >
-        {l.label}
-      </a>
-    </Link>
-  );
+  if (!l.items) {
+    return (
+      <Link href={l.link}>
+        <a
+          className={cx(classes.link, {
+            [classes.linkActive]: l.link == router.pathname,
+          })}
+          target={l.link.startsWith("http") ? "_blank" : "_self"}
+        >
+          {l.label}
+        </a>
+      </Link>
+    );
+  } else {
+    return (
+      <Menu shadow="md">
+        <Menu.Target>
+          <a
+            className={cx(classes.link, {
+              [classes.linkActive]: l.link == router.pathname,
+            })}
+            onClick={(event) => event.preventDefault()}
+          >
+            <span>{l.label}</span>
+          </a>
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          {l.items.map((i) => (
+            <Menu.Item key={i.link} component={NextLink} href={i.link}>
+              {i.label}
+            </Menu.Item>
+          ))}
+        </Menu.Dropdown>
+      </Menu>
+    );
+  }
 }
 
 function StationsMenu() {
