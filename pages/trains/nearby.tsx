@@ -12,9 +12,9 @@ import { NextLink } from "@mantine/next";
 import { IconInfoCircle } from "@tabler/icons";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import Navbar from "../components/NavBar";
-import { trpc } from "../helpers/trpc";
-import { useStyles } from "../styles/important";
+import Navbar from "../../components/NavBar";
+import { trpc } from "../../helpers/trpc";
+import { useStyles } from "../../styles/important";
 
 export default function NearbyPage() {
   const { classes } = useStyles();
