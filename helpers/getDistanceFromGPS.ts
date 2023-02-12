@@ -16,11 +16,17 @@ type Coordinates = {
   location2: Coordinate;
 };
 
+/**
+ * @Returns the distance between two coordinates in KM
+ */
 const getDistanceFromGPS = (coordinates: Coordinates) => {
   const pointA = LocationToPoint(coordinates.location1);
   const pointB = LocationToPoint(coordinates.location2);
 
-  return Math.round(Distance(pointA, pointB));
+  // Round to 2 decimals
+  // The + is for converting it to a number.
+  // Otherwise toFixed will make it a string
+  return +Distance(pointA, pointB).toFixed(2);
 };
 
 // Source: https://github.com/cosinekitty/geocalc/blob/master/compass.html

@@ -5,6 +5,7 @@ import { router, procedure } from "../../trpc";
 import getTrains from "../../../helpers/getTrains";
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
+import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 // Database
 import DB from "../../../lib/DB";
 // Other deps
@@ -12,6 +13,14 @@ import Jimp from "jimp";
 // @ts-ignore - because replace-color doesn't have ts declarations
 import replaceColor from "replace-color";
 import { Trein } from "../../../types/getTrainsResponse";
+import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
+import getJourney from "../../../helpers/getJourney";
+
+type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
+type TrainAndJourney = {
+  train: TrainWithInfoAndDistance;
+  journey?: JourneyDetails;
+};
 
 export const trainsRouter = router({
   getTrains: procedure.query(async () => {
@@ -19,6 +28,36 @@ export const trainsRouter = router({
     const treinenMetInfo = await getTrainData(data.payload.treinen);
     return treinenMetInfo;
   }),
+  nearbyTrains: procedure
+    .input(
+      z.object({
+        latitude: z.number(),
+        longitude: z.number(),
+        radius: z.number().min(50).max(1000),
+      })
+    )
+    .query(async ({ input }) => {
+      const trains = await getTrains();
+
+      const filtered = trains.payload.treinen.map((t) => {
+        const distance = getDistanceFromGPS({
+          location1: { lat: input.latitude, lon: input.longitude },
+          location2: { lat: t.lat, lon: t.lng },
+        });
+        return { ...t, distance };
+      });
+
+      filtered.sort((a, b) => a.distance - b.distance);
+
+      const withInfo = (await getTrainData(filtered.slice(0, 5))).map((t) => {
+        const distance = filtered.find((a) => a.ritId == t.ritId)?.distance;
+        return { ...t, distance };
+      });
+
+      // const trainsWithJourney = await getJourneys(withInfo);
+
+      return withInfo;
+    }),
   paginated: procedure
     .input(
       z.object({
@@ -139,3 +178,17 @@ async function downloadAndSaveImage(trains: TreinWithInfo[]) {
     await DB.saveTrainImg({ type: mat.type, base64data: base64 });
   }
 }
+
+async function getJourneys(trains: TrainWithInfoAndDistance[]) {
+  const journeys: TrainAndJourney[] = [];
+
+  for (const t of trains) {
+    const j = await getJourney(t.ritId);
+    journeys.push({ train: t, journey: j });
+    wait(300);
+  }
+
+  return journeys;
+}
+
+const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));

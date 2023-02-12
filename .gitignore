@@ -39,3 +39,8 @@ redisdata/
 
 #ignore scripts
 scripts/
+# Sentry
+.sentryclirc
+
+# Sentry
+next.config.original.js
