@@ -1,5 +1,8 @@
 FROM node:16-alpine
 
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+  cat /run/secrets/SENTRY_AUTH_TOKEN
+
 RUN apk update
 RUN apk --no-cache --virtual build-dependencies add \
     python3 \ 
