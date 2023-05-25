@@ -61,7 +61,7 @@ export const trainsRouter = router({
   paginated: procedure
     .input(
       z.object({
-        page: z.number(),
+        page: z.number().optional(),
         itemsPerPage: z.number(),
         search: z.string().nullish(),
       })
@@ -82,7 +82,7 @@ export const trainsRouter = router({
         paginated.push(filtered.slice(i, i + itemsPerPage));
       }
 
-      const thisPage = paginated[page - 1] || [];
+      const thisPage = page ? paginated[page - 1] || [] : filtered;
 
       return {
         items: thisPage,

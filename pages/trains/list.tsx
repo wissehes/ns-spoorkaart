@@ -11,24 +11,24 @@ import {
   Title,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { NextLink } from "@mantine/next";
 import { IconInfoCircle, IconSearch } from "@tabler/icons";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../components/NavBar";
 import { trpc } from "../../helpers/trpc";
 import { useStyles } from "../../styles/important";
+import Link from "next/link";
 
 export default function ListTrainsPage() {
   const { classes } = useStyles();
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
+  // const [page, setPage] = useState(1);
+  // const [pages, setPages] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebouncedValue(search, 500);
 
   const trains = trpc.trains.paginated.useQuery({
     itemsPerPage: 30,
-    page,
+    page: undefined,
     search: debouncedSearch,
   });
   const stations = trpc.station.all.useQuery();
@@ -44,11 +44,11 @@ export default function ListTrainsPage() {
     [stations]
   );
 
-  useEffect(() => {
-    if (trains.data?.pages) {
-      setPages(trains.data.pages);
-    }
-  }, [trains]);
+  // useEffect(() => {
+  //   if (trains.data?.pages) {
+  //     setPages(trains.data.pages);
+  //   }
+  // }, [trains]);
 
   return (
     <>
@@ -115,7 +115,7 @@ export default function ListTrainsPage() {
                         <ActionIcon
                           variant="subtle"
                           color={"blue"}
-                          component={NextLink}
+                          component={Link}
                           href={`/journey/${t.treinNummer}`}
                         >
                           <IconInfoCircle size={20} />
@@ -127,14 +127,14 @@ export default function ListTrainsPage() {
               </Table>
             </>
           )}
-          <Center>
+          {/* <Center>
             <Pagination
               total={pages}
               page={page}
               onChange={setPage}
               style={{ marginTop: "1rem" }}
             />
-          </Center>
+          </Center> */}
         </Container>
       </main>
     </>
