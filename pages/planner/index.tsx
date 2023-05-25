@@ -18,7 +18,6 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { NextLink } from "@mantine/next";
 import {
   IconAlertCircle,
   IconArrowBigRightLine,
@@ -46,6 +45,7 @@ import { formatDuration } from "../../helpers/PlannerPage";
 import { trpc } from "../../helpers/trpc";
 import { useStyles } from "../../styles/important";
 import { Trip } from "../../types/NS/journey/getTripPlannerResponse";
+import Link from "next/link";
 
 export default function PlannerPage() {
   const { classes } = useStyles();
@@ -209,7 +209,7 @@ function TripPaper({ trip }: { trip: Trip }) {
               {trip.legs.map((l) => (
                 <Anchor
                   key={l.idx}
-                  component={NextLink}
+                  component={Link}
                   href={`/journey/${l.product.number}`}
                   target="_blank"
                 >

@@ -1,7 +1,7 @@
 import { Badge, Box, Button, Flex, Group, Title } from "@mantine/core";
-import { NextLink } from "@mantine/next";
 import { IconArrowBigRightLine } from "@tabler/icons";
 import { JourneyDetails } from "../../types/getJourneyDetailsResponse";
+import Link from "next/link";
 
 export default function JourneyInfoDrawer({
   journey,
@@ -85,7 +85,7 @@ export default function JourneyInfoDrawer({
       </Flex>
 
       <Button
-        component={NextLink}
+        component={Link}
         href={`/journey/${journey?.productNumbers[0]}`}
         rightIcon={<IconArrowBigRightLine />}
       >

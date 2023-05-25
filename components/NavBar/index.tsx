@@ -10,7 +10,6 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { NextLink } from "@mantine/next";
 import { IconMoonStars, IconSun } from "@tabler/icons";
 
 import Link from "next/link";
@@ -135,15 +134,14 @@ function LinkItem({ l }: { l: Link }) {
 
   if (!l.items) {
     return (
-      <Link href={l.link}>
-        <a
-          className={cx(classes.link, {
-            [classes.linkActive]: l.link == router.pathname,
-          })}
-          target={l.link.startsWith("http") ? "_blank" : "_self"}
-        >
-          {l.label}
-        </a>
+      <Link
+        href={l.link}
+        className={cx(classes.link, {
+          [classes.linkActive]: l.link == router.pathname,
+        })}
+        target={l.link.startsWith("http") ? "_blank" : "_self"}
+      >
+        {l.label}
       </Link>
     );
   } else {
@@ -162,7 +160,7 @@ function LinkItem({ l }: { l: Link }) {
 
         <Menu.Dropdown>
           {l.items.map((i) => (
-            <Menu.Item key={i.link} component={NextLink} href={i.link}>
+            <Menu.Item key={i.link} component={Link} href={i.link}>
               {i.label}
             </Menu.Item>
           ))}
@@ -203,18 +201,14 @@ function StationsMenu() {
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Item component={NextLink} href="/stations">
+        <Menu.Item component={Link} href="/stations">
           <b>Alle stations</b>
         </Menu.Item>
 
         <Menu.Divider />
 
         {stations?.map((s) => (
-          <Menu.Item
-            key={s.code}
-            component={NextLink}
-            href={`/stations/${s.code}`}
-          >
+          <Menu.Item key={s.code} component={Link} href={`/stations/${s.code}`}>
             {s.namen.lang}
           </Menu.Item>
         ))}

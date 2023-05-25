@@ -42,17 +42,17 @@ export default function StationHero({
             <ul>
               <li className={activeTab == "departures" ? "is-active" : ""}>
                 <Link href={`/stations/${station.code}/departures`}>
-                  <a>Vertrektijden</a>
+                  Vertrektijden
                 </Link>
               </li>
               <li className={activeTab == "arrivals" ? "is-active" : ""}>
                 <Link href={`/stations/${station.code}/arrivals`}>
-                  <a>Aankomsttijden</a>
+                  Aankomsttijden
                 </Link>
               </li>
               <li className={activeTab == "disruptions" ? "is-active" : ""}>
                 <Link href={`/stations/${station.code}/disruptions`}>
-                  <a>Storingen</a>
+                  Storingen
                 </Link>
               </li>
             </ul>

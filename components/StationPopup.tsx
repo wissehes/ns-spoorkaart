@@ -7,7 +7,7 @@ import styles from "../styles/Map.module.css";
 import formatTime from "../helpers/formatTime";
 
 import { Box, Button, Center, Loader, Table, Text, Title } from "@mantine/core";
-import { NextLink } from "@mantine/next";
+import Link from "next/link";
 
 export default function StationPopup({ station }: { station: SmallStation }) {
   const query = useQuery(
@@ -71,7 +71,7 @@ export default function StationPopup({ station }: { station: SmallStation }) {
         )}
       </div>
 
-      <Button component={NextLink} href={`/stations/${station.code}`}>
+      <Button component={Link} href={`/stations/${station.code}`}>
         Meer info
       </Button>
     </Box>

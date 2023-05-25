@@ -9,7 +9,6 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { NextLink } from "@mantine/next";
 import { IconInfoCircle } from "@tabler/icons";
 import formatTime from "../../helpers/formatTime";
 import {
@@ -19,6 +18,7 @@ import {
 } from "../../helpers/StationPage";
 import { ArrivalWithJourney } from "../../types/ArrivalWithJourney";
 import SpoorIcon from "./SpoorIcon";
+import Link from "next/link";
 
 export default function ArrivalCard({ a }: { a: ArrivalWithJourney }) {
   const delay = a.stop?.arrivals[0]?.delayInSeconds || 0;
@@ -35,10 +35,7 @@ export default function ArrivalCard({ a }: { a: ArrivalWithJourney }) {
               <Title order={2}>{formatTime(a.arrival.plannedDateTime)}</Title>
               {delay > 30 && <Text c="red">+{formatDelay(delay || 0)}</Text>}
 
-              <ActionIcon
-                component={NextLink}
-                href={`/journey/${product.number}`}
-              >
+              <ActionIcon component={Link} href={`/journey/${product.number}`}>
                 <IconInfoCircle size={20} />
               </ActionIcon>
             </Flex>

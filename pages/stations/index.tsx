@@ -12,7 +12,6 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { NextLink } from "@mantine/next";
 import { IconInfoCircle, IconSearch } from "@tabler/icons";
 
 import Head from "next/head";
@@ -28,6 +27,7 @@ import {
 import { trpc } from "../../helpers/trpc";
 import { useStyles } from "../../styles/important";
 import { SmallStation } from "../../types/getStationsResponse";
+import Link from "next/link";
 
 type SelectData = { value: string; label: string }[];
 
@@ -147,7 +147,7 @@ export default function StationsPage() {
                     <td title={`Info over ${s.namen.kort}`}>
                       <Center>
                         <ActionIcon
-                          component={NextLink}
+                          component={Link}
                           href={`/stations/${s.code}`}
                         >
                           <IconInfoCircle />

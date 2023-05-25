@@ -8,13 +8,13 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { NextLink } from "@mantine/next";
 import { IconInfoCircle } from "@tabler/icons";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/NavBar";
 import { trpc } from "../../helpers/trpc";
 import { useStyles } from "../../styles/important";
+import Link from "next/link";
 
 export default function NearbyPage() {
   const { classes } = useStyles();
@@ -74,7 +74,7 @@ export default function NearbyPage() {
                       <ActionIcon
                         variant="subtle"
                         color={"blue"}
-                        component={NextLink}
+                        component={Link}
                         href={`/journey/${train.treinNummer}`}
                       >
                         <IconInfoCircle size={50} />

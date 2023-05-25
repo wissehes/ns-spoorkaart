@@ -7,7 +7,7 @@ import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 import useStations from "../hooks/useStations";
 import { useMemo } from "react";
 import { Anchor, Box, Button, Group, List, Text, Title } from "@mantine/core";
-import { NextLink } from "@mantine/next";
+import Link from "next/link";
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
@@ -58,7 +58,7 @@ const TrainPopupHeader = ({
 };
 
 const TrainStationLink = ({ text, id }: { text: string; id?: string }) => (
-  <Anchor component={NextLink} href={id ? `/trains?station=${id}` : ``}>
+  <Anchor component={Link} href={id ? `/trains?station=${id}` : ``}>
     {text}
   </Anchor>
 );
@@ -121,7 +121,7 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
             <Text>
               Volgend station:{" "}
               <Anchor
-                component={NextLink}
+                component={Link}
                 href={`/trains?station=${foundStation.code}`}
               >
                 {foundStation.namen.lang}
@@ -155,11 +155,11 @@ export default function TrainPopup({ train }: { train: TreinWithInfo }) {
 
       <Group>
         {train?.materieel && (
-          <Button component={NextLink} href={`/train/${train.materieel[0]}`}>
+          <Button component={Link} href={`/train/${train.materieel[0]}`}>
             Meer info
           </Button>
         )}
-        <Button component={NextLink} href={`/journey/${train.treinNummer}`}>
+        <Button component={Link} href={`/journey/${train.treinNummer}`}>
           Rit
         </Button>
       </Group>

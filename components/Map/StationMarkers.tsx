@@ -58,7 +58,7 @@ export default function StationMarkers() {
             src="/assets/NS/logo.png"
             alt={s.code}
             width="40"
-            height="15.9"
+            height="16"
           />
         </Marker>
       ))}
