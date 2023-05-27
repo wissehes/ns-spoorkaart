@@ -13,16 +13,6 @@ const nextConfig = {
   images: {
     domains: ["vt.ns-mlab.nl"],
   },
-  experimental: {
-    swcPlugins: [
-      [
-        "next-superjson-plugin",
-        {
-          excluded: [],
-        },
-      ],
-    ],
-  },
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,

@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
-    "@emotion/react": "^11.10.5",
-    "@emotion/server": "^11.10.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/server": "^11.11.0",
     "@jimp/png": "^0.16.2",
     "@mantine/core": "^6.0.11",
     "@mantine/hooks": "^6.0.11",
@@ -34,7 +34,6 @@
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^2.4.0",
     "next": "^13.4.4",
-    "next-superjson-plugin": "^0.5.8",
     "node-sass": "^7.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
