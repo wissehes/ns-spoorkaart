@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SENTRY_AUTH_TOKEN: http://...
     depends_on:
       - redis
     ports:
