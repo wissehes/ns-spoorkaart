@@ -1,13 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { JourneyDetails, Stop } from "../types/getJourneyDetailsResponse";
+
+import { JourneyDetails } from "../types/getJourneyDetailsResponse";
 import { TreinWithInfo } from "../types/getTrainsWithInfoResponse";
 
-import useStations from "../hooks/useStations";
 import { useMemo } from "react";
 import { Anchor, Box, Button, Group, List, Text, Title } from "@mantine/core";
 import Link from "next/link";
+import { trpc } from "../helpers/trpc";
 
 function TrainPartsVisualized({ train }: { train: TreinWithInfo }) {
   return (
@@ -86,18 +85,15 @@ const calcSeats = (t: TreinWithInfo) => {
 };
 
 export default function TrainPopup({ train }: { train: TreinWithInfo }) {
-  const { data } = useQuery(
-    ["train", train.treinNummer],
-    async () => {
-      const { data } = await axios.get<JourneyDetails>(
-        `/api/trains/${train.treinNummer}`
-      );
-      return data;
-    },
+  const { data } = trpc.journey.journey.useQuery(
+    { id: train.ritId },
     { refetchOnWindowFocus: false }
   );
 
-  const stations = useStations();
+  const stations = trpc.station.all.useQuery(undefined, {
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   const foundStation = useMemo(() => {
     if (!stations.data) return null;

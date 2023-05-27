@@ -17,7 +17,6 @@ import { Stop } from "../../types/getJourneyDetailsResponse";
 import { createRef, useCallback, useEffect, useMemo, useState } from "react";
 import bbox from "@turf/bbox";
 import { time } from "../../helpers/TrainPage";
-import useTrains from "../../hooks/useTrains";
 import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 import { Button, Flex, SegmentedControl, Text } from "@mantine/core";
 
