@@ -15,6 +15,7 @@ import replaceColor from "replace-color";
 import { Trein } from "../../../types/getTrainsResponse";
 import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
 import getJourney from "../../../helpers/getJourney";
+import { saveTrains } from "../../../helpers/trains/saveTrains";
 
 type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
 type TrainAndJourney = {
@@ -126,7 +127,7 @@ async function getTrainData(treinen: Trein[]) {
   }
 
   await downloadAndSaveImage(treinenMetInfo);
-  await DB.saveTrains(treinenMetInfo);
+  await saveTrains(treinenMetInfo);
   return treinenMetInfo;
 }
 

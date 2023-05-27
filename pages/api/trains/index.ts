@@ -34,7 +34,6 @@ export default async function handler(
   }
 
   await downloadAndSaveImage(treinenMetInfo);
-  // await DB.saveTrains(treinenMetInfo);
   await saveTrains(treinenMetInfo);
 
   res.status(200).json(treinenMetInfo);
