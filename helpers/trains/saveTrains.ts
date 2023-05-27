@@ -2,6 +2,7 @@ import { TrainInfo, TrainPosition } from "@prisma/client";
 import { SavedTrain, SavedTrains } from "../../types/SavedTrain";
 import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 import { prisma } from "../../lib/prisma";
+import DB from "../../lib/DB";
 
 export async function saveTrains(data: TreinWithInfo[]) {
   const trains: {
@@ -15,6 +16,14 @@ export async function saveTrains(data: TreinWithInfo[]) {
       station: string | null;
     };
   }[] = [];
+
+  const lastSavedDate = await DB.lastSavedDate();
+  const difference = new Date().getTime() - (lastSavedDate || 0);
+
+  // Return if the last saved date is less than 5 seconds ago.
+  if (lastSavedDate && difference < 5000) {
+    return;
+  } else await DB.setSavedNow();
 
   /**
    * Format all trains in a way that is easier to store in
