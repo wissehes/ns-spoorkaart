@@ -8,6 +8,8 @@ const { withSentryConfig } = require("@sentry/nextjs");
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // For docker deployment
+  output: "standalone",
   images: {
     domains: ["vt.ns-mlab.nl"],
   },
@@ -24,7 +26,7 @@ const nextConfig = {
 // module.exports = nextConfig;
 
 module.exports = withSentryConfig(
-  module.exports,
+  nextConfig,
   { silent: true },
   { hideSourceMaps: true }
 );

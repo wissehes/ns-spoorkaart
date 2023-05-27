@@ -2,13 +2,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
-import NS from "../../../helpers/NS";
-import { getTrainsResponse, Trein } from "../../../types/getTrainsResponse";
+import { Trein } from "../../../types/getTrainsResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveImage";
-import DB from "../../../lib/DB";
 import getTrains from "../../../helpers/getTrains";
+import { saveTrains } from "../../../helpers/trains/saveTrains";
 
 type Data = any;
 
@@ -76,6 +75,6 @@ async function getTrainData(treinen: Trein[]) {
   }
 
   await downloadAndSaveImage(treinenMetInfo);
-  await DB.saveTrains(treinenMetInfo);
+  await saveTrains(treinenMetInfo);
   return treinenMetInfo;
 }

@@ -1,7 +1,5 @@
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { formatTime } from "../../../helpers/StationPage";
-import DB from "../../../lib/DB";
-import { SavedTrain } from "../../../types/SavedTrain";
 
 import maplibreGl from "maplibre-gl";
 import Map, {
@@ -20,19 +18,57 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import bbox from "@turf/bbox";
 import { useEffect, useMemo, useState, createRef } from "react";
 import { MapRef } from "react-map-gl/dist/esm/mapbox/create-ref";
+import { prisma } from "../../../lib/prisma";
+import { z } from "zod";
+import { TrainPosition } from "@prisma/client";
 
-export default function TrainDataPage({ data }: { data?: SavedTrain[] }) {
+// Create a getData function
+const getData = async (id: number) =>
+  await prisma.train.findUnique({
+    where: { materialId: id },
+    include: { info: true, positions: true },
+  });
+
+type SSRData = NonNullable<Awaited<ReturnType<typeof getData>>>;
+
+const validate = z.preprocess(
+  (a) => parseInt(z.string().parse(a), 10),
+  z.number().positive()
+);
+
+export const getServerSideProps: GetServerSideProps<{ data: SSRData }> = async (
+  context
+) => {
+  const train = context.params?.train;
+  const matNum = validate.safeParse(train);
+
+  if (matNum.success) {
+    const data = await getData(matNum.data);
+
+    if (data) {
+      return {
+        props: { data: data },
+      };
+    } else return { notFound: true };
+  } else {
+    return { notFound: true };
+  }
+};
+
+export default function TrainDataPage({
+  data,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <div>
       <main>
-        <div className="box" style={{}}>
-          {data && <TrainHistoryMap data={data} />}
+        <div className="box">
+          {data && <TrainHistoryMap positions={data.positions} />}
         </div>
 
-        {data?.map((d) => (
+        {data.positions.map((d) => (
           <div className="box" key={new Date(d.date).toISOString()}>
             <p>{formatTime(new Date(d.date).toISOString())}</p>
-            <p>{d.snelheid} km/u</p>
+            <p>{d.speed} km/u</p>
           </div>
         ))}
       </main>
@@ -40,20 +76,24 @@ export default function TrainDataPage({ data }: { data?: SavedTrain[] }) {
   );
 }
 
-function TrainHistoryMap({ data }: { data: SavedTrain[] }) {
-  const [geojson] = useState({
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: data.map((d) => [d.lng, d.lat]),
+function TrainHistoryMap({ positions }: { positions: TrainPosition[] }) {
+  const geojson = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: positions.map((d) => [d.lng, d.lat]),
+          },
         },
-      },
-    ],
-  });
+      ],
+    }),
+    [positions]
+  );
+
   const parsed = useMemo(() => bbox(geojson), [geojson]);
   const map = createRef<MapRef>();
 
@@ -92,20 +132,3 @@ function TrainHistoryMap({ data }: { data: SavedTrain[] }) {
     </Map>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const train = context.params?.train;
-
-  try {
-    const data = await DB.getTrain(Number(train));
-
-    return {
-      props: { data: data || [] },
-    };
-  } catch (e) {
-    console.error(e);
-    return {
-      notFound: true,
-    };
-  }
-};

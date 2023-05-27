@@ -10,12 +10,13 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
-    "@emotion/react": "^11.10.5",
-    "@emotion/server": "^11.10.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/server": "^11.11.0",
     "@jimp/png": "^0.16.2",
     "@mantine/core": "^6.0.11",
     "@mantine/hooks": "^6.0.11",
     "@mantine/next": "^6.0.11",
+    "@prisma/client": "4.14.1",
     "@redis/json": "^1.0.4",
     "@sentry/nextjs": "^7.37.1",
     "@svgr/webpack": "^6.5.1",
@@ -32,13 +33,14 @@
     "jimp": "^0.16.2",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^2.4.0",
-    "next": "13.4.3",
+    "next": "^13.4.4",
     "node-sass": "^7.0.3",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.19",
     "redis": "^4.3.1",
     "replace-color": "^2.3.0",
+    "sharp": "^0.32.1",
     "zod": "^3.19.1"
   },
   "devDependencies": {
@@ -46,7 +48,8 @@
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
     "eslint": "8.25.0",
-    "eslint-config-next": "12.3.1",
+    "eslint-config-next": "^13.4.4",
+    "prisma": "^4.14.1",
     "typescript": "4.8.4"
   }
 }

@@ -1,14 +1,9 @@
 import { RedisJSON } from "@redis/json/dist/commands";
-import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import getStations from "../../helpers/getStations";
-import Redis from "../../lib/Redis";
-import {
-  SmallStation,
-  SmallStations,
-  Station,
-} from "../../types/getStationsResponse";
+import Redis from "../../lib/redis";
+import { SmallStation, SmallStations } from "../../types/getStationsResponse";
 import { RedisStations } from "../../types/RedisStations";
 
 type Data = SmallStation[];

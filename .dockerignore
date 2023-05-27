@@ -2,3 +2,11 @@ node_modules/
 .next/
 .env.local
 docker-compose.yml
+Dockerfile
+.dockerignore
+npm-debug.log
+README.md
+.git
+
+# docker compose data
+data/

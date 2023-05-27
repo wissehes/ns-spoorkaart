@@ -2,15 +2,15 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Marker, Popup, useMap } from "react-map-gl";
-import useStations from "../../hooks/useStations";
 import { SmallStation } from "../../types/getStationsResponse";
 import StationPopup from "../StationPopup";
+import { trpc } from "../../helpers/trpc";
 
 export default function StationMarkers() {
   const [showStations, setStations] = useState(false);
   const [chosenStation, setStation] = useState<SmallStation | null>(null);
 
-  const stationQuery = useStations();
+  const stationQuery = trpc.station.all.useQuery();
   const { map } = useMap();
   const router = useRouter();
 

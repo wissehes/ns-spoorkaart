@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Station
+model Station {
+  code      String   @id
+  createdAt DateTime @default(now())
+
+  stationType String
+  sporen      String[]
+  namen       StationNames @relation(fields: [namesCode], references: [code])
+  namesCode   String       @unique
+  land        String
+  lat         Float
+  lng         Float
+}
+
+model StationNames {
+  code    String   @id
+  station Station?
+
+  lang   String
+  middel String
+  kort   String
+}
+
+// Trains
+model Train {
+  materialId Int      @id
+  firstSeen  DateTime @default(now())
+
+  info        TrainInfo? @relation(fields: [trainInfoId], references: [id])
+  trainInfoId String?    @unique
+
+  positions TrainPosition[]
+}
+
+model TrainInfo {
+  id    String @id @default(cuid())
+  train Train?
+
+  type       String
+  facilities String[]
+  afbeelding String?
+
+  breedte Int?
+  hoogte  Int?
+
+  bakkenImg String[]
+
+  zitplaatsEersteKlas Int?
+  zitplaatsTweedeKlas Int?
+  klapstoelEersteKlas Int?
+  klapstoelTweedeKlas Int?
+}
+
+model TrainPosition {
+  id        String   @id @default(cuid())
+  journeyId String
+  date      DateTime @default(now())
+
+  lat     Float // Latitude
+  lng     Float // Longitude
+  speed   Float // Speed in km/h
+  station String? // The current/next station code
+
+  train   Train @relation(fields: [trainId], references: [materialId], onDelete: Cascade)
+  trainId Int
+}

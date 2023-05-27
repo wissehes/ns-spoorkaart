@@ -1,0 +1,38 @@
+version: "3.3"
+
+services:
+  spoorkaart:
+    # image: ghcr.io/wissehes/ns-spoorkaart:main
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SENTRY_AUTH_TOKEN: http://...
+    depends_on:
+      - redis
+    ports:
+      - 3000:3000
+    environment:
+      - NS_API=<ns_api_key>
+      - REDIS_URL=redis://redis
+      - DATABASE_URL="postgresql://postgres:postgres@postgres/spoorkaart?schema=public"
+
+  redis:
+    image: redis/redis-stack:latest
+    volumes:
+      - ./data/redis:/data
+      # Uncomment for redisinsight
+    # ports:
+    # - 8001:8001
+
+  postgres:
+    image: postgres:latest
+    # ports:
+    # - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: spoorkaart
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    restart: unless-stopped

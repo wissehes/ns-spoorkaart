@@ -12,23 +12,23 @@ import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
 import replaceColor from "replace-color";
 
 export async function downloadAndSaveImage(trains: TreinWithInfo[]) {
-  const exists = await DB.imageArrayExists();
-  if (exists) {
-    return;
-  }
+  // Get all images
+  const allImages = await DB.allImages();
 
+  //Loop through all trains passed to this function
   for (const train of trains) {
+    // Filter out all objects without the necessary data
     if (!train.info) continue;
 
     const mat = train.info.materieeldelen[0];
     const url = mat?.bakken[0]?.afbeelding?.url;
     if (!mat || !url) continue;
 
-    const exists = await DB.trainImgExists(mat.type);
-    if (exists) {
-      continue;
-    }
+    // Filter out all objects that are already downloaded
+    if (allImages?.find((i) => i.type == mat.type) || false) continue;
 
+    // Download the image and resize it
+    // to a smaller image
     const img = (await Jimp.read(url))
       .resize(Jimp.AUTO, 50)
       .crop(0, 0, 100, 50);
@@ -36,6 +36,7 @@ export async function downloadAndSaveImage(trains: TreinWithInfo[]) {
       img.rgba(true).background(0x000000ff);
     }
 
+    // Replace the white background with a transparent background
     const imgBuffer = await img.getBufferAsync(Jimp.MIME_PNG);
     const imgReplaced = await replaceColor({
       image: imgBuffer,
@@ -46,9 +47,11 @@ export async function downloadAndSaveImage(trains: TreinWithInfo[]) {
       },
     });
 
+    // Get the buffer and convert it to base64
     const imgReplacedBuffer = await imgReplaced.getBufferAsync(Jimp.MIME_PNG);
     const base64 = Buffer.from(imgReplacedBuffer, "binary").toString("base64");
 
+    // Save it
     await DB.saveTrainImg({ type: mat.type, base64data: base64 });
   }
 }
