@@ -7,3 +7,6 @@ Dockerfile
 npm-debug.log
 README.md
 .git
+
+# docker compose data
+data/
