@@ -50,10 +50,10 @@ model TrainInfo {
 
   type       String
   facilities String[]
-  afbeelding String
+  afbeelding String?
 
-  breedte Int
-  hoogte  Int
+  breedte Int?
+  hoogte  Int?
 
   bakkenImg String[]
 

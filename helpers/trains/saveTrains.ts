@@ -34,7 +34,6 @@ export async function saveTrains(data: TreinWithInfo[]) {
     for (const materieel of train.info?.materieeldelen || []) {
       if (materieel.materieelnummer == undefined) continue;
       if (trains.find((a) => a.materialId == materieel.materieelnummer)) {
-        console.log(`Duplicate: [${materieel.materieelnummer}]`);
         continue;
       }
 
@@ -53,7 +52,9 @@ export async function saveTrains(data: TreinWithInfo[]) {
           afbeelding: materieel.afbeelding,
           breedte: materieel.breedte,
           hoogte: materieel.hoogte,
-          bakkenImg: materieel.bakken.map((b) => b.afbeelding.url),
+          bakkenImg: materieel.bakken
+            .filter((b) => b.afbeelding)
+            .map((b) => b.afbeelding.url),
           ...zitplaatsen,
         },
         position: {
