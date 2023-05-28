@@ -32,6 +32,7 @@ import {
   JourneyDetails,
   Stop,
 } from "../../../types/getJourneyDetailsResponse";
+import TrainDisplay from "../../../components/Train/TrainDisplay";
 
 const useStyles = createStyles((theme) => ({
   container: {
@@ -205,42 +206,14 @@ export default function JourneyPage({
             )}
           </Group>
 
-          <Flex
-            style={{
-              flexDirection: "row",
-              overflow: "auto",
-            }}
-          >
-            {journey?.stops[0]?.actualStock?.trainParts
-              .filter((p) => p.image)
-              .map((p) => (
-                <Flex
-                  style={{ height: "6rem", flexDirection: "column" }}
-                  key={p.stockIdentifier}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={p.image?.uri || ""}
-                    alt={p.stockIdentifier}
-                    style={{
-                      height: "auto",
-                      width: "auto",
-                      maxHeight: "4rem",
-                      maxWidth: "fit-content",
-                    }}
-                  />
-                  <Badge
-                    style={{
-                      marginBottom: "1rem",
-                      marginLeft: "1rem",
-                      marginRight: "1rem",
-                    }}
-                  >
-                    Treinstel {p.stockIdentifier}
-                  </Badge>
-                </Flex>
-              ))}
-          </Flex>
+          <TrainDisplay
+            parts={journey?.stops[0]?.actualStock?.trainParts
+              ?.filter((p) => p.image)
+              .map((p) => ({
+                image: p.image.uri,
+                identifier: p.stockIdentifier,
+              }))}
+          />
 
           {!trains.isLoading && !thisTrain && <JourneyNotOnMap />}
 
