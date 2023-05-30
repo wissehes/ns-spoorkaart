@@ -1,21 +1,17 @@
 // Important stuff
 import { z } from "zod";
 import { router, procedure } from "../../trpc";
-// Types/methods
-import getTrains from "../../../helpers/getTrains";
+// Types
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
-import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
-// Database
-import DB from "../../../lib/DB";
-// Other deps
-import Jimp from "jimp";
-// @ts-ignore - because replace-color doesn't have ts declarations
-import replaceColor from "replace-color";
-import { Trein } from "../../../types/getTrainsResponse";
 import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
-import getJourney from "../../../helpers/getJourney";
+import { Trein } from "../../../types/getTrainsResponse";
+
+// Methods
+import getTrains from "../../../helpers/getTrains";
+import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 import { saveTrains } from "../../../helpers/trains/saveTrains";
+import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveImage";
 
 type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
 type TrainAndJourney = {
@@ -129,67 +125,6 @@ async function getTrainData(treinen: Trein[]) {
   await downloadAndSaveImage(treinenMetInfo);
   await saveTrains(treinenMetInfo);
   return treinenMetInfo;
-}
-
-/**
- * This mechanism first filters all trains, to make sure the material parts exist,
- * then we check if the images already exist. If they don't, then we're looping over
- * every train and download, resize and remove the background of every image. Lastly,
- * we save the image (usually around 3kb) to Redis.
- */
-
-async function downloadAndSaveImage(trains: TreinWithInfo[]) {
-  const exists = await DB.imageArrayExists();
-  if (exists) {
-    return;
-  }
-
-  for (const train of trains) {
-    if (!train.info) continue;
-
-    const mat = train.info.materieeldelen[0];
-    const url = mat?.bakken[0]?.afbeelding?.url;
-    if (!mat || !url) continue;
-
-    const exists = await DB.trainImgExists(mat.type);
-    if (exists) {
-      continue;
-    }
-
-    const img = (await Jimp.read(url))
-      .resize(Jimp.AUTO, 50)
-      .crop(0, 0, 100, 50);
-    if (img.hasAlpha()) {
-      img.rgba(true).background(0x000000ff);
-    }
-
-    const imgBuffer = await img.getBufferAsync(Jimp.MIME_PNG);
-    const imgReplaced = await replaceColor({
-      image: imgBuffer,
-      colors: {
-        type: "hex",
-        targetColor: "#ffffff",
-        replaceColor: "#00000000",
-      },
-    });
-
-    const imgReplacedBuffer = await imgReplaced.getBufferAsync(Jimp.MIME_PNG);
-    const base64 = Buffer.from(imgReplacedBuffer, "binary").toString("base64");
-
-    await DB.saveTrainImg({ type: mat.type, base64data: base64 });
-  }
-}
-
-async function getJourneys(trains: TrainWithInfoAndDistance[]) {
-  const journeys: TrainAndJourney[] = [];
-
-  for (const t of trains) {
-    const j = await getJourney(t.ritId);
-    journeys.push({ train: t, journey: j });
-    wait(300);
-  }
-
-  return journeys;
 }
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
