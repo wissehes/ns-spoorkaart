@@ -1,30 +1,26 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 
 import maplibreGl from "maplibre-gl";
-import Map, {
-  FullscreenControl,
-  GeolocateControl,
-  Layer,
-  MapProvider,
-  Marker,
-  NavigationControl,
-  Popup,
-  ScaleControl,
-  Source,
-  useMap,
-} from "react-map-gl";
+import Map, { Layer, MapProvider, Source, useMap } from "react-map-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import bbox from "@turf/bbox";
 import { useEffect, useMemo, createRef } from "react";
-import { MapRef } from "react-map-gl/dist/esm/mapbox/create-ref";
 import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
 import { TrainPosition } from "@prisma/client";
 import StandardLayout from "../../../layouts/StandardLayout";
 import { Header } from "../../../components/Layout/Header";
 import TrainDisplay from "../../../components/Train/TrainDisplay";
-import { Badge, Group } from "@mantine/core";
-import { timeUntil } from "../../../helpers/StationPage";
+import { Badge, Group, Paper, Text } from "@mantine/core";
+import usePositionsGeojson from "../../../hooks/usePositonsGeojson";
+import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
+import { getJourneyFromMaterial } from "../../../helpers/getJourney";
+import CurrentJourney from "../../../components/TrainData/CurrentJourney";
+import { trpc } from "../../../helpers/trpc";
+import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
+import TrainMarker from "../../../components/Map/TrainMarker";
+import TrainStats from "../../../components/TrainData/TrainStats";
+import NearbyStations from "../../../components/TrainData/NearbyStations";
 
 // Create a getData function
 const getData = async (id: number) => {
@@ -35,34 +31,37 @@ const getData = async (id: number) => {
   });
 };
 
-type SSRData = NonNullable<Awaited<ReturnType<typeof getData>>>;
+type PrismaData = NonNullable<Awaited<ReturnType<typeof getData>>>;
+type SSRProps = { data: PrismaData; currentJourney: JourneyDetails | null };
 
 const validate = z.preprocess(
   (a) => parseInt(z.string().parse(a), 10),
   z.number().positive()
 );
 
-export const getServerSideProps: GetServerSideProps<{ data: SSRData }> = async (
+export const getServerSideProps: GetServerSideProps<SSRProps> = async (
   context
 ) => {
   const train = context.params?.train;
   const matNum = validate.safeParse(train);
 
-  if (matNum.success) {
-    const data = await getData(matNum.data);
+  const data = matNum.success ? await getData(matNum.data) : null;
+  const journey = matNum.success
+    ? await getJourneyFromMaterial(matNum.data)
+    : null;
+  if (!matNum.success || !data) return { notFound: true };
 
-    if (data) {
-      return {
-        props: { data: JSON.parse(JSON.stringify(data)) as SSRData },
-      };
-    } else return { notFound: true };
-  } else {
-    return { notFound: true };
-  }
+  return {
+    props: {
+      data: JSON.parse(JSON.stringify(data)) as PrismaData,
+      currentJourney: journey,
+    },
+  };
 };
 
 export default function TrainDataPage({
   data,
+  currentJourney,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const parts = data.info?.afbeelding
     ? [{ image: data.info.afbeelding, identifier: data.materialId.toString() }]
@@ -74,6 +73,15 @@ export default function TrainDataPage({
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       ),
     [data.positions]
+  );
+
+  const trains = trpc.trains.getTrains.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
+  const thisTrain = useMemo(
+    () =>
+      trains.data?.find((t) => t.materieel?.find((m) => m == data.materialId)),
+    [trains.data, data.materialId]
   );
 
   return (
@@ -94,48 +102,55 @@ export default function TrainDataPage({
 
       <TrainDisplay parts={parts} />
 
+      {currentJourney && <CurrentJourney journey={currentJourney} />}
+      {thisTrain && data.info && (
+        <TrainStats
+          train={thisTrain}
+          info={data.info}
+          positions={data.positions}
+        />
+      )}
+
       <div className="box">
-        {data && <TrainHistoryMap positions={sortedPos} />}
+        {data && <TrainHistoryMap positions={sortedPos} train={thisTrain} />}
       </div>
 
-      {sortedPos.map((d) => (
-        <div className="box" key={new Date(d.date).toISOString()}>
-          <p>{timeUntil(new Date(d.date).toISOString())}</p>
-          <p>{d.speed} km/u</p>
-          <p>{d.station}</p>
-        </div>
-      ))}
+      {thisTrain && <NearbyStations lat={thisTrain.lat} lon={thisTrain.lng} />}
     </StandardLayout>
   );
 }
 
-function TrainHistoryMap({ positions }: { positions: TrainPosition[] }) {
-  const geojson = useMemo(
-    () => ({
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: positions.map((d) => [d.lng, d.lat]),
-          },
-        },
-        ...positions.map((d) => ({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [d.lng, d.lat],
-          },
-        })),
-      ],
-    }),
-    [positions]
-  );
+interface TrainHistoryMapProps {
+  positions: TrainPosition[];
+  train: TreinWithInfo | undefined;
+}
 
+function TrainHistoryMap({ positions, train }: TrainHistoryMapProps) {
+  return (
+    <MapProvider>
+      <Map
+        id="savetrainmap"
+        mapLib={maplibreGl}
+        style={{ height: "500px", zIndex: 1, borderRadius: "10px" }}
+        mapStyle="https://api.maptiler.com/maps/ea0be450-77fe-405d-8871-1f29aefe697a/style.json?key=Rs8qUKBURAgmwFrBW6Bj"
+        initialViewState={{
+          longitude: 4.9,
+          latitude: 52.1,
+          zoom: 7,
+        }}
+        minZoom={5}
+      >
+        <Markers positions={positions} />
+        {train && <TrainMarker train={train} />}
+      </Map>
+    </MapProvider>
+  );
+}
+
+function Markers({ positions }: { positions: TrainPosition[] }) {
+  const geojson = usePositionsGeojson(positions);
   const parsed = useMemo(() => bbox(geojson), [geojson]);
-  const map = createRef<MapRef>();
+  const map = useMap();
 
   useEffect(() => {
     map.current?.fitBounds(
@@ -149,19 +164,7 @@ function TrainHistoryMap({ positions }: { positions: TrainPosition[] }) {
   }, [map, parsed]);
 
   return (
-    <Map
-      id="savetrainmap"
-      mapLib={maplibreGl}
-      style={{ height: "500px", zIndex: 1, borderRadius: "10px" }}
-      mapStyle="https://api.maptiler.com/maps/ea0be450-77fe-405d-8871-1f29aefe697a/style.json?key=Rs8qUKBURAgmwFrBW6Bj"
-      initialViewState={{
-        longitude: 4.9,
-        latitude: 52.1,
-        zoom: 7,
-      }}
-      minZoom={5}
-      ref={map}
-    >
+    <>
       {/* @ts-ignore */}
       <Source type="geojson" data={geojson} lineMetrics={true}>
         <Layer
@@ -196,6 +199,6 @@ function TrainHistoryMap({ positions }: { positions: TrainPosition[] }) {
           }}
         />
       </Source>
-    </Map>
+    </>
   );
 }
