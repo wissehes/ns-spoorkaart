@@ -24,7 +24,7 @@ export interface Stop {
   previousStopId: string[];
   nextStopId: string[];
   destination?: string;
-  status: string;
+  status: Status;
   arrivals: Arrival[];
   departures: Departure[];
   actualStock?: ActualStock;
@@ -40,6 +40,8 @@ export interface StopStation {
   countryCode: string;
   uicCode: string;
 }
+
+export type Status = "ORIGIN" | "STOP" | "PASSING" | "DESTINATION";
 
 export interface Arrival {
   product: Product;
