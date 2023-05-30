@@ -22,6 +22,7 @@ import axios from "axios";
 import { getMapGeoJSONResponse } from "../types/getMapGeoJSONResponse";
 import { useRouter } from "next/router";
 import StationMarkers from "./Map/StationMarkers";
+import TrainMarker from "./Map/TrainMarker";
 
 type TrainIcon = {
   url: string;
@@ -144,26 +145,7 @@ function TrainMarkers() {
   return (
     <>
       {trainQuery.data?.map((t) => (
-        <Marker
-          key={t.ritId}
-          longitude={t.lng}
-          latitude={t.lat}
-          anchor="center"
-          onClick={(e) => {
-            e.originalEvent.stopPropagation();
-            setTrain(t);
-          }}
-          style={{ cursor: "pointer" }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/image/${encodeURIComponent(
-              t.info?.materieeldelen[0]?.type || "default"
-            )}`}
-            alt={t.ritId}
-            style={{ height: "30px" }}
-          />
-        </Marker>
+        <TrainMarker key={t.ritId} train={t} onClick={() => setTrain(t)} />
       ))}
 
       {actualChosenTrain && (
