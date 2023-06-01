@@ -11,7 +11,7 @@ import { TrainPosition } from "@prisma/client";
 import StandardLayout from "../../../layouts/StandardLayout";
 import { Header } from "../../../components/Layout/Header";
 import TrainDisplay from "../../../components/Train/TrainDisplay";
-import { Badge, Group, Paper, Text } from "@mantine/core";
+import { Badge, Group } from "@mantine/core";
 import usePositionsGeojson from "../../../hooks/usePositonsGeojson";
 import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
 import { getJourneyFromMaterial } from "../../../helpers/getJourney";
