@@ -33,6 +33,7 @@ import {
   Stop,
 } from "../../../types/getJourneyDetailsResponse";
 import TrainDisplay from "../../../components/Train/TrainDisplay";
+import Link from "next/link";
 
 const useStyles = createStyles((theme) => ({
   container: {
@@ -184,15 +185,20 @@ export default function JourneyPage({
             <Badge>
               Zitplaatsen: {firstStop?.actualStock?.numberOfSeats || "?"}
             </Badge>
-            {firstStop?.actualStock?.trainParts.map((p) => (
-              <Badge
-                key={p.stockIdentifier}
-                variant="gradient"
-                gradient={{ from: "teal", to: "lime", deg: 105 }}
-              >
-                Treinstel {p.stockIdentifier}
-              </Badge>
-            ))}
+            {firstStop?.actualStock?.trainParts
+              .filter((p) => p.stockIdentifier !== "0")
+              .map((p) => (
+                <Badge
+                  key={p.stockIdentifier}
+                  variant="gradient"
+                  gradient={{ from: "teal", to: "lime", deg: 105 }}
+                  component={Link}
+                  href={`/train/${p.stockIdentifier}/data`}
+                  style={{ cursor: "pointer" }}
+                >
+                  Treinstel {p.stockIdentifier}
+                </Badge>
+              ))}
             {firstStop?.actualStock?.trainParts.map((p) =>
               p.facilities.map((f) => (
                 <Badge
