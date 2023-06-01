@@ -28,6 +28,7 @@ const getData = async (id: number) => {
   return await prisma.train.findFirst({
     where: { materialId: id },
     include: { info: true, positions: { where: { date: { gte: date } } } },
+    // include: { info: true, positions: true },
   });
 };
 
@@ -153,6 +154,8 @@ function Markers({ positions }: { positions: TrainPosition[] }) {
   const map = useMap();
 
   useEffect(() => {
+    if (parsed.includes(Infinity)) return;
+
     map.current?.fitBounds(
       [
         [parsed[0], parsed[1]],
