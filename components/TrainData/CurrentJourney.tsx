@@ -19,8 +19,8 @@ export default function CurrentJourney({
 
   const progress = useMemo(() => {
     const now = new Date();
-    const originDepTxt = origin?.departures[0].actualTime;
-    const destinationArrTxt = destination?.arrivals[0].actualTime;
+    const originDepTxt = origin?.departures[0]?.actualTime;
+    const destinationArrTxt = destination?.arrivals[0]?.actualTime;
     if (!originDepTxt || !destinationArrTxt) return 100;
 
     const originDep = new Date(originDepTxt);
