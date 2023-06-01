@@ -46,6 +46,7 @@ import { trpc } from "../../helpers/trpc";
 import { useStyles } from "../../styles/important";
 import { Trip } from "../../types/NS/journey/getTripPlannerResponse";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function PlannerPage() {
   const { classes } = useStyles();
@@ -363,20 +364,12 @@ function LookupNumber() {
 
 function LookupTrainNumber() {
   const [number, setNumber] = useState("");
-  const [opened, setOpened] = useState(false);
-
-  const query = trpc.journey.trainNumber.useQuery(number, {
-    enabled: false,
-    refetchOnWindowFocus: false,
-  });
+  const [isLoading, setLoading] = useState(false);
+  const router = useRouter();
 
   const click = () => {
-    if (query.isFetched) {
-      setOpened(true);
-    } else {
-      query.refetch();
-      setOpened(true);
-    }
+    setLoading(true);
+    router.push(`/train/${number}/data`);
   };
 
   return (
@@ -396,7 +389,7 @@ function LookupTrainNumber() {
           <Button
             rightIcon={<IconArrowBigRightLine />}
             onClick={click}
-            loading={query.isFetching}
+            loading={isLoading}
           >
             Laat zien
           </Button>
@@ -406,31 +399,6 @@ function LookupTrainNumber() {
           deur.
         </Text>
       </Box>
-
-      <Drawer
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title="Treininfo"
-        padding="xl"
-        size="xl"
-      >
-        {query.isLoading && (
-          <Center>
-            <Loader />
-          </Center>
-        )}
-
-        {query.isError && (
-          <Alert
-            icon={<IconAlertCircle size={16} />}
-            title="Oh nee!"
-            color="red"
-          >
-            {query.error.message}
-          </Alert>
-        )}
-        {query.data && <JourneyInfoDrawer journey={query.data} />}
-      </Drawer>
     </>
   );
 }
