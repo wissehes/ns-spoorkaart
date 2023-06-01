@@ -15,17 +15,23 @@ export async function downloadAndSaveImage(trains: TreinWithInfo[]) {
   // Get all images
   const allImages = await DB.allImages();
 
+  let savedTrains: string[] = [];
+
   //Loop through all trains passed to this function
   for (const train of trains) {
     // Filter out all objects without the necessary data
     if (!train.info) continue;
-
     const mat = train.info.materieeldelen[0];
-    const url = mat?.bakken[0]?.afbeelding?.url;
+    const url = mat?.bakken[0]?.afbeelding?.url ?? mat?.afbeelding;
+
     if (!mat || !url) continue;
 
     // Filter out all objects that are already downloaded
-    if (allImages?.find((i) => i.type == mat.type) || false) continue;
+    if (
+      allImages?.find((i) => i.type == mat.type) ||
+      savedTrains.includes(mat.type)
+    )
+      continue;
 
     // Download the image and resize it
     // to a smaller image
@@ -53,5 +59,6 @@ export async function downloadAndSaveImage(trains: TreinWithInfo[]) {
 
     // Save it
     await DB.saveTrainImg({ type: mat.type, base64data: base64 });
+    savedTrains.push(mat.type);
   }
 }
