@@ -21,6 +21,16 @@ import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import TrainMarker from "../../../components/Map/TrainMarker";
 import TrainStats from "../../../components/TrainData/TrainStats";
 import NearbyStations from "../../../components/TrainData/NearbyStations";
+// import SpeedChart from "../../../components/TrainData/SpeedChart";
+
+import dynamic from "next/dynamic";
+
+const SpeedChart = dynamic(
+  () => import("../../../components/TrainData/SpeedChart"),
+  {
+    ssr: false,
+  }
+);
 
 // Create a getData function
 const getData = async (id: number) => {
@@ -117,6 +127,8 @@ export default function TrainDataPage({
       </div>
 
       {thisTrain && <NearbyStations lat={thisTrain.lat} lon={thisTrain.lng} />}
+
+      {data.positions.length > 0 && <SpeedChart positions={data.positions} />}
     </StandardLayout>
   );
 }
