@@ -12,6 +12,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   const foundRedisData = (await Redis.json.get(
     "stations"
   )) as unknown as RedisStations;
