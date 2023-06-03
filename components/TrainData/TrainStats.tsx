@@ -7,9 +7,13 @@ import {
   rem,
 } from "@mantine/core";
 import { TreinWithInfo } from "../../types/getTrainsWithInfoResponse";
-import { IconGauge, IconMapPins } from "@tabler/icons";
+import {
+  IconCircleArrowUpFilled,
+  IconGauge,
+  IconMapPins,
+  IconCompass,
+} from "@tabler/icons-react";
 import { TrainInfo, TrainPosition } from "@prisma/client";
-import { trpc } from "../../helpers/trpc";
 import { useMemo } from "react";
 import getDistanceFromGPS from "../../helpers/getDistanceFromGPS";
 
@@ -33,6 +37,13 @@ const useStyles = createStyles((theme) => ({
         : theme.colors.gray[4],
   },
 
+  directionIcon: {
+    color:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[3]
+        : theme.colors.gray[8],
+  },
+
   title: {
     fontWeight: 700,
     textTransform: "uppercase",
@@ -42,6 +53,7 @@ const useStyles = createStyles((theme) => ({
 const icons = {
   speed: IconGauge,
   distance: IconMapPins,
+  direction: IconCompass,
 };
 
 interface TrainStatsProps {
@@ -89,6 +101,11 @@ export default function TrainStats({
       icon: "speed",
     },
     {
+      title: "Richting",
+      value: train.richting,
+      icon: "direction",
+    },
+    {
       title: "Zitplaatsen",
       value:
         (info.zitplaatsEersteKlas ?? 0) +
@@ -108,9 +125,9 @@ export default function TrainStats({
   return (
     <SimpleGrid
       my="md"
-      cols={3}
+      cols={4}
       breakpoints={[
-        { maxWidth: "md", cols: 2 },
+        { maxWidth: "sm", cols: 2 },
         { maxWidth: "xs", cols: 1 },
       ]}
     >
@@ -125,21 +142,44 @@ function StatDisplay({ stat }: { stat: Stat }) {
   const { classes } = useStyles();
   const Icon = stat.icon ? icons[stat.icon] : undefined;
 
+  const isDirection = stat.title == "Richting";
+  const rotation = isDirection ? Number(stat.value) : 0;
+
   return (
     <Paper withBorder p="md" radius="md">
       <Group position="apart">
         <Text size="xs" color="dimmed" className={classes.title}>
           {stat.title}
         </Text>
-        {Icon && <Icon className={classes.icon} size="1.4rem" stroke={1.5} />}
+        {Icon && (
+          <Icon
+            className={classes.icon}
+            size="1.4rem"
+            stroke={1.5}
+            style={{ rotate: `deg(${rotation})` }}
+          />
+        )}
       </Group>
 
       <Group align="flex-end" spacing="xs" mt="xs">
-        <Text className={classes.value}>{stat.value}</Text>
-        {stat.metric && (
+        {!isDirection && <Text className={classes.value}>{stat.value}</Text>}
+        {stat.metric && !isDirection && (
           <Text color="dimmed" fz="sm" fw={500} className={classes.metric}>
             <span>{stat.metric}</span>
           </Text>
+        )}
+        {isDirection && (
+          <div
+            style={{
+              display: "inline-block",
+              transform: `rotate(${rotation}deg)`,
+            }}
+          >
+            <IconCircleArrowUpFilled
+              className={classes.directionIcon}
+              size="3rem"
+            />
+          </div>
         )}
       </Group>
       {stat.subtitle && (
