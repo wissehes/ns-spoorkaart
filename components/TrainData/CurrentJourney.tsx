@@ -1,4 +1,4 @@
-import { Card, Flex, Progress, Text } from "@mantine/core";
+import { Card, Flex, List, Progress, Text } from "@mantine/core";
 import { JourneyDetails } from "../../types/getJourneyDetailsResponse";
 import { useMemo } from "react";
 import { IconArrowRight } from "@tabler/icons";
@@ -65,6 +65,14 @@ export default function CurrentJourney({
         </Text>
       </Flex>
       <Progress value={progress} mt="md" size="lg" radius="xl" />
+
+      {journey.notes.length > 0 && (
+        <List mt="md">
+          {journey.notes.map((n) => (
+            <List.Item key={n.text}>{n.text}</List.Item>
+          ))}
+        </List>
+      )}
     </Card>
   );
 }
