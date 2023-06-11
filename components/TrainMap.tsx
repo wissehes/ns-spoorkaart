@@ -4,7 +4,6 @@ import Map, {
   GeolocateControl,
   Layer,
   MapProvider,
-  Marker,
   NavigationControl,
   Popup,
   ScaleControl,
@@ -23,6 +22,8 @@ import { getMapGeoJSONResponse } from "../types/getMapGeoJSONResponse";
 import { useRouter } from "next/router";
 import StationMarkers from "./Map/StationMarkers";
 import TrainMarker from "./Map/TrainMarker";
+import MapControlPanel from "./Map/MapControlPanel";
+import { useMapStore } from "../stores/MapStore";
 
 type TrainIcon = {
   url: string;
@@ -53,6 +54,7 @@ const types: TrainTypes = {
 };
 
 export default function TrainMap() {
+  const showTrack = useMapStore((s) => s.showTrack);
   const trackQuery = useQuery(["spoorkaart"], async () => {
     const { data } = await axios.get<getMapGeoJSONResponse>("/api/spoorkaart");
     return data;
@@ -78,7 +80,7 @@ export default function TrainMap() {
         <NavigationControl position="top-left" />
         <ScaleControl />
 
-        {trackQuery.data && (
+        {trackQuery.data && showTrack && (
           // @ts-ignore
           <Source type="geojson" data={trackQuery.data.payload}>
             <Layer
@@ -92,6 +94,7 @@ export default function TrainMap() {
 
         <TrainMarkers />
       </Map>
+      <MapControlPanel />
     </MapProvider>
   );
 }
