@@ -18,7 +18,7 @@ export default function StandardLayout({
         <title>{title}</title>
       </Head>
 
-      <main style={{ minHeight: "100vh", marginBottom: "2rem" }}>
+      <main style={{ minHeight: "100vh", paddingBottom: "2rem" }}>
         <Navbar />
         <Container>{children}</Container>
       </main>
