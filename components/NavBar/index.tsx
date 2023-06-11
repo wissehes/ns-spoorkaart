@@ -88,6 +88,7 @@ const links: Link[] = [
     label: "Treinen",
     items: [
       { link: "/trains/list", label: "Alle treinen" },
+      { link: "/trains/saved", label: "Opgeslagen" },
       { link: "/trains/nearby", label: "In de buurt" },
     ],
   },
@@ -150,7 +151,9 @@ function LinkItem({ l }: { l: Link }) {
         <Menu.Target>
           <a
             className={cx(classes.link, {
-              [classes.linkActive]: l.link == router.pathname,
+              [classes.linkActive]:
+                l.link == router.pathname ||
+                l.items.map((a) => a.link).includes(router.pathname),
             })}
             onClick={(event) => event.preventDefault()}
           >
