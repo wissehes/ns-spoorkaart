@@ -15,10 +15,6 @@ import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveIma
 import { TRPCError } from "@trpc/server";
 
 type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
-type TrainAndJourney = {
-  train: TrainWithInfoAndDistance;
-  journey?: JourneyDetails;
-};
 
 export const trainsRouter = router({
   /**
@@ -160,5 +156,3 @@ async function getTrainData(treinen: Trein[]) {
   await saveTrains(treinenMetInfo);
   return treinenMetInfo;
 }
-
-const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
