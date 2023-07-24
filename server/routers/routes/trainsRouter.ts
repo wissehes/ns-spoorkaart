@@ -4,7 +4,6 @@ import { router, procedure } from "../../trpc";
 // Types
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
-import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
 import { Trein } from "../../../types/getTrainsResponse";
 
 // Methods
@@ -13,8 +12,6 @@ import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 import { saveTrains } from "../../../helpers/trains/saveTrains";
 import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveImage";
 import { TRPCError } from "@trpc/server";
-
-type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
 
 export const trainsRouter = router({
   /**
