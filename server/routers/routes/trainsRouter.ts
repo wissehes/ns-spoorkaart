@@ -12,6 +12,7 @@ import getTrains from "../../../helpers/getTrains";
 import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 import { saveTrains } from "../../../helpers/trains/saveTrains";
 import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveImage";
+import { TRPCError } from "@trpc/server";
 
 type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
 type TrainAndJourney = {
@@ -20,11 +21,43 @@ type TrainAndJourney = {
 };
 
 export const trainsRouter = router({
+  /**
+   * Get all live trains and their info (material info, etc...)
+   */
   getTrains: procedure.query(async () => {
     const data = await getTrains();
     const treinenMetInfo = await getTrainData(data.payload.treinen);
     return treinenMetInfo;
   }),
+
+  /**
+   * Get a single train by material ID and its info (material info, etc...)
+   */
+  getTrain: procedure
+    .input(z.object({ materialId: z.number() }))
+    .query(async ({ input }) => {
+      const _trains = await getTrains();
+      const _thisTrain = _trains.payload.treinen.find((t) =>
+        t.materieel?.includes(input.materialId)
+      );
+      const trains = await getTrainData(
+        _thisTrain ? [_thisTrain] : _trains.payload.treinen
+      );
+
+      const thisTrain = trains.find((t) =>
+        t.materieel?.find((m) => m == input.materialId)
+      );
+
+      if (!thisTrain) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Train not found" });
+      }
+
+      return thisTrain;
+    }),
+
+  /**
+   * Get nearby trains based on coordinates and radius
+   */
   nearbyTrains: procedure
     .input(
       z.object({
@@ -55,6 +88,7 @@ export const trainsRouter = router({
 
       return withInfo;
     }),
+
   paginated: procedure
     .input(
       z.object({

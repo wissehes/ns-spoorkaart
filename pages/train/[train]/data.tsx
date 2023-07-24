@@ -76,14 +76,21 @@ export default function TrainDataPage({
     [data.positions]
   );
 
-  const trains = trpc.trains.getTrains.useQuery(undefined, {
-    refetchInterval: 5000,
-  });
-  const thisTrain = useMemo(
-    () =>
-      trains.data?.find((t) => t.materieel?.find((m) => m == data.materialId)),
-    [trains.data, data.materialId]
+  const thisTrain = trpc.trains.getTrain.useQuery(
+    {
+      materialId: data.materialId,
+    },
+    { refetchInterval: 5000 }
   );
+
+  // const trains = trpc.trains.getTrains.useQuery(undefined, {
+  //   refetchInterval: 5000,
+  // });
+  // const thisTrain = useMemo(
+  //   () =>
+  //     trains.data?.find((t) => t.materieel?.find((m) => m == data.materialId)),
+  //   [trains.data, data.materialId]
+  // );
 
   return (
     <StandardLayout title="Trein info">
@@ -104,19 +111,23 @@ export default function TrainDataPage({
       <TrainDisplay parts={parts} />
 
       {currentJourney && <CurrentJourney journey={currentJourney} />}
-      {thisTrain && data.info && (
+      {thisTrain.isSuccess && data.info && (
         <TrainStats
-          train={thisTrain}
+          train={thisTrain.data}
           info={data.info}
           positions={data.positions}
         />
       )}
 
       <div className="box">
-        {data && <TrainHistoryMap positions={sortedPos} train={thisTrain} />}
+        {data && (
+          <TrainHistoryMap positions={sortedPos} train={thisTrain.data} />
+        )}
       </div>
 
-      {thisTrain && <NearbyStations lat={thisTrain.lat} lon={thisTrain.lng} />}
+      {thisTrain.isSuccess && (
+        <NearbyStations lat={thisTrain.data.lat} lon={thisTrain.data.lng} />
+      )}
     </StandardLayout>
   );
 }
