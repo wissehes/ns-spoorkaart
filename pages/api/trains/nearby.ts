@@ -14,7 +14,7 @@ type Data = any;
 const schema = z.object({
   latitude: z.string().transform(Number),
   longitude: z.string().transform(Number),
-  radius: z.string().regex(/^\d+$/).transform(Number),
+  radius: z.string().regex(/^\d+$/).transform(Number).optional(),
 });
 
 export default async function handler(
@@ -44,7 +44,7 @@ export default async function handler(
       })
       .sort((a, b) => a.distance - b.distance);
 
-    const filtered = mapped.slice(0, 20);
+    const filtered = mapped.slice(0, 5);
 
     // const withInfo = await getTrainData()
 
