@@ -4,7 +4,6 @@ import { router, procedure } from "../../trpc";
 // Types
 import { TreinWithInfo } from "../../../types/getTrainsWithInfoResponse";
 import { getTrainInfo } from "../../../helpers/trains/getTrainInfo";
-import { JourneyDetails } from "../../../types/getJourneyDetailsResponse";
 import { Trein } from "../../../types/getTrainsResponse";
 
 // Methods
@@ -12,19 +11,46 @@ import getTrains from "../../../helpers/getTrains";
 import getDistanceFromGPS from "../../../helpers/getDistanceFromGPS";
 import { saveTrains } from "../../../helpers/trains/saveTrains";
 import { downloadAndSaveImage } from "../../../helpers/trains/downloadAndSaveImage";
-
-type TrainWithInfoAndDistance = TreinWithInfo & { distance: number };
-type TrainAndJourney = {
-  train: TrainWithInfoAndDistance;
-  journey?: JourneyDetails;
-};
+import { TRPCError } from "@trpc/server";
 
 export const trainsRouter = router({
+  /**
+   * Get all live trains and their info (material info, etc...)
+   */
   getTrains: procedure.query(async () => {
     const data = await getTrains();
     const treinenMetInfo = await getTrainData(data.payload.treinen);
     return treinenMetInfo;
   }),
+
+  /**
+   * Get a single train by material ID and its info (material info, etc...)
+   */
+  getTrain: procedure
+    .input(z.object({ materialId: z.number() }))
+    .query(async ({ input }) => {
+      const _trains = await getTrains();
+      const _thisTrain = _trains.payload.treinen.find((t) =>
+        t.materieel?.includes(input.materialId)
+      );
+      const trains = await getTrainData(
+        _thisTrain ? [_thisTrain] : _trains.payload.treinen
+      );
+
+      const thisTrain = trains.find((t) =>
+        t.materieel?.find((m) => m == input.materialId)
+      );
+
+      if (!thisTrain) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Train not found" });
+      }
+
+      return thisTrain;
+    }),
+
+  /**
+   * Get nearby trains based on coordinates and radius
+   */
   nearbyTrains: procedure
     .input(
       z.object({
@@ -55,6 +81,7 @@ export const trainsRouter = router({
 
       return withInfo;
     }),
+
   paginated: procedure
     .input(
       z.object({
@@ -126,5 +153,3 @@ async function getTrainData(treinen: Trein[]) {
   await saveTrains(treinenMetInfo);
   return treinenMetInfo;
 }
-
-const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
