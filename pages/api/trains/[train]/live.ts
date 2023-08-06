@@ -33,6 +33,6 @@ export default async function handler(
   const thisInfo = infos.find((i) => i.ritnummer == thisTrain.treinNummer);
 
   if (thisInfo) {
-    return { ...thisTrain, info: thisInfo };
-  } else return thisTrain;
+    res.json({ ...thisTrain, info: thisInfo });
+  } else return res.json(thisTrain);
 }
